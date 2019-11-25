@@ -12,12 +12,12 @@ import { useFormikContext } from 'formik';
 
 export default function() {
   const {
-    values: { changes }
+    values: { changes },
+    setFieldValue
   } = useFormikContext();
 
   return (
     <React.Fragment>
-      <Sep />
       <h2>Thông tin đăng kí biến động</h2>
       <h3>GCN</h3>
 
@@ -58,8 +58,8 @@ export default function() {
           as={TextField}
         />
       </GCN>
-
       <Sep />
+      <h2>Thông tin đăng kí biến động</h2>
       <h3>Thông tin đất</h3>
 
       <Land>
@@ -155,7 +155,6 @@ const GCN = styled.div`
   grid-template-columns: repeat(3, 1fr);
   grid-gap: 30px;
 `;
-
 const Sep = styled.div`
   height: 50px;
 `;

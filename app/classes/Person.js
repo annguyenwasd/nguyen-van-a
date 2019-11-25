@@ -5,7 +5,7 @@ export default class Person {
 
   identifier = '';
 
-  idDate='';
+  idDate;
 
   idLocation = '';
 
@@ -13,5 +13,9 @@ export default class Person {
 
   honorific = 'Ông';
 
-  id=Date.now()
+  id = Date.now();
+
+  constructor() {
+    this.idDate = new Date();
+  }
 }
