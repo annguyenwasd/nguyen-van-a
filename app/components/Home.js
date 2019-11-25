@@ -6,33 +6,31 @@ import PizZip from 'pizzip';
 import fs from 'fs';
 import path from 'path';
 import Docxtemplater from 'docxtemplater';
-import { Formik, Form, Field, ErrorMessage, FieldArray } from 'formik';
+import { Formik, Form, FieldArray } from 'formik';
 import {
   TextField,
   Button,
-  Select,
-  MenuItem,
   IconButton,
   InputAdornment,
   Input
 } from '@material-ui/core';
-import Fab from '@material-ui/core/Fab';
-import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import * as expressions from 'angular-expressions';
 import { merge } from 'lodash';
 import DateFnsUtils from '@date-io/date-fns';
 import {
   MuiPickersUtilsProvider,
-  KeyboardTimePicker,
   KeyboardDatePicker
 } from '@material-ui/pickers';
-import { assocPath, compose } from 'ramda';
+import { assocPath, compose, map, prop, assoc } from 'ramda';
 import moment from 'moment';
 
-import routes from '../constants/routes';
-import Person from './Person';
-import LandType from './LandType';
+import Person from '../classes/Person';
+import LandType from '../classes/LandType';
+import MyInput from './MyInput';
+import Step1 from './Step1';
+import Step2 from './Step2';
+import Step3 from './Step3';
 
 const files = [
   'don_dang_ky_bien_dong.docx',
@@ -41,23 +39,22 @@ const files = [
   'tptb.docx'
 ];
 
-const honorifics = ['Ông', 'Bà'];
 const desktop = path.resolve(homedir(), `Desktop`);
 
 function angularParser(tag) {
   if (tag === '.') {
     return {
-      get: function(s) {
+      get(s) {
         return s;
       }
     };
   }
   const expr = expressions.compile(tag.replace(/(’|“|”|‘)/g, "'"));
   return {
-    get: function(scope, context) {
+    get(scope, context) {
       let obj = {};
-      const scopeList = context.scopeList;
-      const num = context.num;
+      const { scopeList } = context;
+      const { num } = context;
       for (let i = 0, len = num + 1; i < len; i++) {
         obj = merge(obj, scopeList[i]);
       }
@@ -167,7 +164,8 @@ export default class Home extends Component<Props> {
                 moment(values.changes.gcn.approveDate).format('DD/MM/YYYY')
               ),
               assocPath(['sideB', 'names'], sideBNames),
-              assocPath(['output'], values.output.path || desktop)
+              assocPath(['output'], values.output.path || desktop),
+              map(assoc('id', prop('identifier')))
             )(values);
 
             files.forEach(file => this.generate(file, data));
@@ -175,475 +173,13 @@ export default class Home extends Component<Props> {
         >
           {({ values: { sideA, sideB, changes, contract }, setFieldValue }) => (
             <Form>
-              <FieldArray
-                name="sideA.people"
-                render={arrayHelpers => {
-                  return (
-                    <People>
-                      <h2>
-                        Bên A &nbsp;
-                        <Button
-                          variant="contained"
-                          color="secondary"
-                          onClick={() => arrayHelpers.push(new Person())}
-                        >
-                          Thêm bên A
-                        </Button>
-                      </h2>
-
-                      {sideA.people.map((person, idx) => {
-                        const nthPerson = `sideA.people.${idx}`;
-                        return (
-                          <PersonDiv key={`${idx}${person.id}${person.name}`}>
-                            <Field
-                              name={`${nthPerson}.honorific`}
-                              as={TextField}
-                              select
-                              label="Ông/Bà"
-                              id="honorific-selector"
-                            >
-                              {honorifics.map(h => (
-                                <MenuItem value={h} key={h}>
-                                  {h}
-                                </MenuItem>
-                              ))}
-                            </Field>
-                            <Field
-                              label="Họ và tên"
-                              name={`${nthPerson}.fullName`}
-                              as={TextField}
-                              style={{ gridColumnEnd: 'span 3' }}
-                            />
-                            <Field
-                              label="Sinh năm"
-                              type="number"
-                              name={`${nthPerson}.yearOfBirth`}
-                              as={TextField}
-                            />
-                            <Field
-                              type="text"
-                              label="CMND số"
-                              name={`${nthPerson}.id`}
-                              as={TextField}
-                              style={{ gridRow: 2, gridColumn: '1/3' }}
-                            />
-                            <Field
-                              label="Cấp ngày"
-                              name={`${nthPerson}.idDate`}
-                              as={TextField}
-                              style={{ gridRow: 2 }}
-                            />
-                            <Field
-                              label="Cấp tại"
-                              name={`${nthPerson}.idLocation`}
-                              as={TextField}
-                              style={{ gridRow: 2, gridColumnEnd: 'span 2' }}
-                            />
-                            <Field
-                              label="Địa chỉ"
-                              name={`${nthPerson}.address`}
-                              as={TextField}
-                              style={{ gridRow: 3, gridColumn: '1/6' }}
-                            />
-
-                            <IconButton
-                              aria-label="delete"
-                              disabled={sideA.people.length < 2}
-                              onClick={() => arrayHelpers.remove(idx)}
-                              style={{ justifySelf: 'start' }}
-                            >
-                              <DeleteIcon fontSize="large" />
-                            </IconButton>
-                          </PersonDiv>
-                        );
-                      })}
-                    </People>
-                  );
-                }}
-              />
-
-              <Sep />
-
-              <FieldArray
-                name="sideB.people"
-                render={arrayHelpers => {
-                  return (
-                    <People>
-                      <h2>
-                        Bên B &nbsp;
-                        <Button
-                          color="secondary"
-                          variant="contained"
-                          onClick={() => arrayHelpers.push(new Person())}
-                        >
-                          Thêm bên B
-                        </Button>
-                      </h2>
-
-                      {sideB.people.map((person, idx) => {
-                        const nthPerson = `sideB.people.${idx}`;
-                        return (
-                          <PersonDiv key={`${idx}${person.id}${person.name}`}>
-                            <Field
-                              name={`${nthPerson}.honorific`}
-                              as={TextField}
-                              select
-                              label="Ông/Bà"
-                              id="honorific-selector"
-                            >
-                              {honorifics.map(h => (
-                                <MenuItem value={h} key={h}>
-                                  {h}
-                                </MenuItem>
-                              ))}
-                            </Field>
-                            <Field
-                              label="Họ và tên"
-                              name={`${nthPerson}.fullName`}
-                              as={TextField}
-                              style={{ gridColumnEnd: 'span 3' }}
-                            />
-                            <Field
-                              label="Sinh năm"
-                              type="number"
-                              name={`${nthPerson}.yearOfBirth`}
-                              as={TextField}
-                            />
-                            <Field
-                              label="CMND số"
-                              name={`${nthPerson}.id`}
-                              as={TextField}
-                              style={{ gridRow: 2, gridColumn: '1/3' }}
-                            />
-                            <Field
-                              label="Cấp ngày"
-                              name={`${nthPerson}.idDate`}
-                              as={TextField}
-                              style={{ gridRow: 2 }}
-                            />
-                            <Field
-                              label="Cấp tại"
-                              name={`${nthPerson}.idLocation`}
-                              as={TextField}
-                              style={{ gridRow: 2, gridColumnEnd: 'span 2' }}
-                            />
-                            <Field
-                              label="Địa chỉ"
-                              name={`${nthPerson}.address`}
-                              as={TextField}
-                              style={{ gridRow: 3, gridColumn: '1/6' }}
-                            />
-                            <IconButton
-                              aria-label="delete"
-                              disabled={sideB.people.length < 2}
-                              onClick={() => arrayHelpers.remove(idx)}
-                              style={{ justifySelf: 'start' }}
-                            >
-                              <DeleteIcon fontSize="large" />
-                            </IconButton>
-                          </PersonDiv>
-                        );
-                      })}
-                    </People>
-                  );
-                }}
-              />
-
-              <Sep />
-              <h2>Thông tin đăng kí biến động</h2>
-              <h3>GCN</h3>
-
-              <GCN>
-                <Field
-                  label="Số vào sổ cấp GCN"
-                  name="changes.gcn.number"
-                  as={TextField}
-                />
-                <Field
-                  label="Số phát hành GCN"
-                  name="changes.gcn.publish"
-                  as={TextField}
-                />
-
-                <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                  <KeyboardDatePicker
-                    disableToolbar
-                    variant="inline"
-                    format="dd/MM/yyyy"
-                    id="date-picker-inline"
-                    label="Ngày cấp GCN"
-                    KeyboardButtonProps={{
-                      'aria-label': 'change date'
-                    }}
-                    value={changes.gcn.approveDate}
-                    onChange={date => {
-                      setFieldValue('changes.gcn.approveDate', date);
-                    }}
-                  />
-                </MuiPickersUtilsProvider>
-                <Field
-                  style={{
-                    gridColumnEnd: 'span 3'
-                  }}
-                  label="Nơi cấp"
-                  name="changes.gcn.location"
-                  as={TextField}
-                />
-              </GCN>
-
-              <Sep />
-              <h3>Thông tin đất</h3>
-
-              <Land>
-                <h4>Trước biến động</h4>
-                <h4>Sau biến động</h4>
-
-                <Field
-                  label="Thửa đất số"
-                  type="number"
-                  name="changes.before.number"
-                  as={TextField}
-                />
-                <Field
-                  label="Thửa đất số"
-                  type="number"
-                  name="changes.after.number"
-                  as={TextField}
-                />
-
-                <Field
-                  label="Tờ bản đồ số"
-                  type="number"
-                  name="changes.before.mapNumber"
-                  as={TextField}
-                />
-                <Field
-                  label="Tờ bản đồ số"
-                  type="number"
-                  name="changes.after.mapNumber"
-                  as={TextField}
-                />
-
-                <Field
-                  label="Mục đích sử dụng (kí hiệu)"
-                  type="text"
-                  name="changes.before.purpose"
-                  as={TextField}
-                />
-                <Field
-                  label="Mục đích sử dụng (kí hiệu)"
-                  type="text"
-                  name="changes.after.purpose"
-                  as={TextField}
-                />
-
-                <Field
-                  label="Diện tích"
-                  type="number"
-                  name="changes.before.square"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <span>
-                          m<sup>2</sup>
-                        </span>
-                      </InputAdornment>
-                    )
-                  }}
-                  as={TextField}
-                />
-                <Field
-                  label="Diện tích"
-                  type="number"
-                  name="changes.after.square"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <span>
-                          m<sup>2</sup>
-                        </span>
-                      </InputAdornment>
-                    )
-                  }}
-                  as={TextField}
-                />
-
-                <Field
-                  label="Lý do biến động"
-                  type="text"
-                  name="changes.reason"
-                  style={{
-                    gridColumnEnd: 'span 2'
-                  }}
-                  as={TextField}
-                />
-              </Land>
-
-              <Sep />
-              <h3>Thông tin chuyển nhượng</h3>
-              <Transfer>
-                <Field
-                  label="Diện tích"
-                  type="number"
-                  name="changes.before.square"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <span>
-                          m<sup>2</sup>
-                        </span>
-                      </InputAdornment>
-                    )
-                  }}
-                  as={TextField}
-                />
-
-                <Field
-                  label="Diện tích bằng chữ"
-                  type="text"
-                  name="contract.land.squareText"
-                  as={TextField}
-                />
-                <Field
-                  label="Địa chỉ đất"
-                  style={{
-                    gridColumnEnd: 'span 2'
-                  }}
-                  type="text"
-                  name="contract.land.address"
-                  as={TextField}
-                />
-                <Field
-                  style={{
-                    gridColumnEnd: 'span 2'
-                  }}
-                  label="Mục đích sử dụng (bằng chữ)"
-                  type="text"
-                  name="contract.land.purposeText"
-                  as={TextField}
-                />
-
-                <Field
-                  label="Thời hạn sử dụng"
-                  type="text"
-                  name="contract.land.duration"
-                  as={TextField}
-                />
-                <Field
-                  label="Nguồn gốc sử dụng"
-                  type="text"
-                  name="contract.land.source"
-                  as={TextField}
-                />
-                <Field
-                  style={{
-                    gridColumnEnd: 'span 2'
-                  }}
-                  label="Những hạn chế về quyền sử dụng đất"
-                  type="text"
-                  name="contract.land.limitation"
-                  as={TextField}
-                />
-
-                <FieldArray
-                  name="contract.land.types"
-                  render={arrayHelpers => {
-                    return (
-                      <LandTypes>
-                        <h4>
-                          Các loại đất &nbsp;
-                          <Button
-                            variant="contained"
-                            color="secondary"
-                            onClick={() => arrayHelpers.push(new LandType())}
-                          >
-                            Thêm loại đất
-                          </Button>
-                        </h4>
-
-                        {contract.land.types.map((type, idx) => {
-                          const nthType = `contract.land.types.${idx}`;
-                          return (
-                            <LandTypeDiv
-                              key={`${idx}${type.name}${type.square}`}
-                            >
-                              <Field
-                                label="Tên loại đất"
-                                name={`${nthType}.name`}
-                                as={TextField}
-                              />
-                              <Field
-                                label="Diện tích"
-                                type="number"
-                                name={`${nthType}.square`}
-                                InputProps={{
-                                  endAdornment: (
-                                    <InputAdornment position="end">
-                                      <span>
-                                        m<sup>2</sup>
-                                      </span>
-                                    </InputAdornment>
-                                  )
-                                }}
-                                as={TextField}
-                              />
-
-                              <IconButton
-                                aria-label="delete"
-                                disabled={contract.land.types.length < 2}
-                                onClick={() => arrayHelpers.remove(idx)}
-                                style={{ justifySelf: 'start' }}
-                              >
-                                <DeleteIcon fontSize="large" />
-                              </IconButton>
-                            </LandTypeDiv>
-                          );
-                        })}
-                      </LandTypes>
-                    );
-                  }}
-                />
-                <span></span>
-
-                <h4>Tiền</h4>
-                <span></span>
-
-                <Field
-                  label="Giá (bằng số)"
-                  type="number"
-                  name="contract.price.number"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <span>
-                          <sup>vnđ</sup>
-                        </span>
-                      </InputAdornment>
-                    )
-                  }}
-                  as={TextField}
-                />
-                <Field
-                  label="Giá (bằng chữ)"
-                  type="text"
-                  name="contract.price.text"
-                  as={TextField}
-                />
-
-                <Field
-                  style={{
-                    gridColumnEnd: 'span 2'
-                  }}
-                  label="Nơi chứng thực"
-                  type="text"
-                  name="contract.land.authenticateLocation"
-                  as={TextField}
-                />
-              </Transfer>
+              {/* <Step1 /> */}
+              {/* <Step2 /> */}
+              {/* <Step3 /> */}
 
               <Sep />
               <Misc>
-                <Field
+                <MyInput
                   label="Năm làm hồ sơ"
                   type="number"
                   name="year"
@@ -715,17 +251,6 @@ const GCN = styled.div`
 const Sep = styled.div`
   height: 50px;
 `;
-
-const PersonDiv = styled.div`
-  display: grid;
-  grid-template-columns: repeat(6, 100px);
-  grid-gap: 30px;
-  margin-bottom: 30px;
-`;
-
-const People = styled.div``;
-
-const Side = styled.div``;
 
 const Wrapper = styled.main`
   padding: 30px 0;
