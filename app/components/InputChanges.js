@@ -1,7 +1,6 @@
 import 'date-fns';
 import React from 'react';
 import styled from 'styled-components';
-import MyInput from './MyInput';
 import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker
@@ -9,6 +8,7 @@ import {
 import { InputAdornment, TextField } from '@material-ui/core';
 import DateFnsUtils from '@date-io/date-fns';
 import { useFormikContext } from 'formik';
+import MyInput from './MyInput';
 
 export default function() {
   const {

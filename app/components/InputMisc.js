@@ -1,11 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useFormikContext } from 'formik';
-import MyInput from './MyInput';
 import { Button } from '@material-ui/core';
 
+import MyInput from './MyInput';
+
 export default function() {
-  const { setFieldValue } = useFormikContext();
+  const { setFieldValue, submitForm } = useFormikContext();
 
   return (
     <Wrapper>
@@ -23,7 +24,12 @@ export default function() {
           directory="true"
         />
       </Output>
-      <Button variant="contained" color="primary" type="submit">
+      <Button
+        variant="contained"
+        color="primary"
+        type="submit"
+        onClick={submitForm}
+      >
         Xuất
       </Button>
     </Wrapper>

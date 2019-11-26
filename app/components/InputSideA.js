@@ -2,8 +2,6 @@ import React from 'react';
 import styled from 'styled-components';
 import { TextField, Button, MenuItem, IconButton } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
-import MyInput from './MyInput';
-import Person from '../classes/Person';
 import { FieldArray, useFormikContext } from 'formik';
 import 'date-fns';
 import {
@@ -11,6 +9,8 @@ import {
   KeyboardDatePicker
 } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
+import Person from '../classes/Person';
+import MyInput from './MyInput';
 
 const honorifics = ['Ông', 'Bà'];
 
@@ -123,5 +123,3 @@ const PersonDiv = styled.div`
 `;
 
 const People = styled.div``;
-
-const Side = styled.div``;

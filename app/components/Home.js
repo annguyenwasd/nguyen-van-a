@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { homedir } from 'os';
 import PizZip from 'pizzip';
@@ -38,6 +38,8 @@ import InputContractInfo from './InputContractInfo';
 import InputMisc from './InputMisc';
 
 import { makeStyles } from '@material-ui/core/styles';
+
+const log = require('electron-log');
 
 const files = [
   'don_dang_ky_bien_dong.docx',
@@ -92,7 +94,9 @@ const generate = (file, data) => {
       stack: error.stack,
       properties: error.properties
     };
-    console.log(JSON.stringify({ error: e }));
+    console.log(e);
+    alert(e);
+    log.errror(JSON.stringify({ error: e }));
     // The error thrown here contains additional information when logged with JSON.stringify (it contains a property object).
     throw error;
   }
@@ -142,7 +146,7 @@ const initialValues = {
       duration: '',
       source: '',
       limitation: '',
-      types: [new LandType()]
+      types: []
     },
     price: {
       number: 0,
@@ -154,19 +158,11 @@ const initialValues = {
 };
 
 const handleSubmit = values => {
-  const sideBNames = values.sideA.people
-    .map(
-      p =>
-        `${p.fullName}, sinh năm ${p.yearOfBirth}, CMND số: ${p.id} cấp ngày: ${p.idDate} tại ${p.idLocation}`
-    )
-    .join(' và ');
-
   const data = compose(
     assocPath(
       ['changes', 'gcn', 'approveDate'],
       moment(values.changes.gcn.approveDate).format('DD/MM/YYYY')
     ),
-    assocPath(['sideB', 'names'], sideBNames),
     assocPath(['output'], values.output.path || desktop),
     map(assoc('id', prop('identifier')))
   )(values);
@@ -182,6 +178,15 @@ const handleSubmit = values => {
   }));
 
   data.year = moment(data.year).format('YYYY');
+
+  const sideANames = data.sideA.people
+    .map(
+      p =>
+        `${p.fullName}, sinh năm ${p.yearOfBirth}, CMND số: ${p.id} cấp ngày: ${p.idDate} tại ${p.idLocation}`
+    )
+    .join(' và ');
+
+  data.sideA.names = sideANames;
 
   files.forEach(file => generate(file, data));
 

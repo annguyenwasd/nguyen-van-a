@@ -3,7 +3,7 @@ export default class LandType {
 
   square;
 
-  id=Date.now()
+  id = Date.now();
 
   constructure(name, square) {
     this.name = name;

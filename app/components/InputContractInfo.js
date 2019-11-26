@@ -1,10 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
-import MyInput from './MyInput';
 import { InputAdornment, IconButton, Button } from '@material-ui/core';
 import LandType from '../classes/LandType';
 import { useFormikContext, FieldArray } from 'formik';
 import DeleteIcon from '@material-ui/icons/Delete';
+import MyInput from './MyInput';
 
 export default function() {
   const {
