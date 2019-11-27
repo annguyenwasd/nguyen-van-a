@@ -6,12 +6,24 @@ import { Button } from '@material-ui/core';
 import MyInput from './MyInput';
 
 export default function() {
-  const { setFieldValue, submitForm } = useFormikContext();
+  const { setFieldValue } = useFormikContext();
 
   return (
     <Wrapper>
       <MyInput label="Năm làm hồ sơ" type="number" name="year" />
 
+      <Output>
+        <label htmlFor="input">Thư mục chứa file word</label>
+        <input
+          onChange={e => {
+            setFieldValue('input', e.target.files[0]);
+          }}
+          id="input"
+          type="file"
+          webkitdirectory="true"
+          directory="true"
+        />
+      </Output>
       <Output>
         <label htmlFor="output">Thư mục xuất</label>
         <input
@@ -24,12 +36,7 @@ export default function() {
           directory="true"
         />
       </Output>
-      <Button
-        variant="contained"
-        color="primary"
-        type="submit"
-        onClick={submitForm}
-      >
+      <Button variant="contained" color="primary" type="submit">
         Xuất
       </Button>
     </Wrapper>
@@ -48,8 +55,4 @@ const Output = styled.div`
   label {
     margin-right: 20px;
   }
-`;
-
-const Sep = styled.div`
-  height: 50px;
 `;

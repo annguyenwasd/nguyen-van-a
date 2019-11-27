@@ -65,6 +65,9 @@
       "app/main.prod.js.map",
       "package.json"
     ],
+    "extraResources": [
+      "resources/docxs/*"
+    ],
     "dmg": {
       "contents": [
         {
@@ -280,6 +283,7 @@
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-hot-loader": "^4.8.2",
+    "react-number-format": "^4.3.1",
     "react-redux": "^7.1.0",
     "react-router": "^5.0.0",
     "react-router-dom": "^5.0.0",

@@ -4,7 +4,7 @@ import { InputAdornment, IconButton, Button } from '@material-ui/core';
 import LandType from '../classes/LandType';
 import { useFormikContext, FieldArray } from 'formik';
 import DeleteIcon from '@material-ui/icons/Delete';
-import MyInput from './MyInput';
+import MyInput, { MoneyFormat } from './MyInput';
 
 export default function() {
   const {

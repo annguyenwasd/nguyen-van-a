@@ -5,41 +5,26 @@ import PizZip from 'pizzip';
 import fs from 'fs';
 import path from 'path';
 import Docxtemplater from 'docxtemplater';
-import { Formik, Form, FieldArray } from 'formik';
+import { Formik, Form } from 'formik';
 import {
-  TextField,
   Button,
-  IconButton,
-  InputAdornment,
-  Input,
   Step,
   Stepper,
   StepButton,
   Typography
 } from '@material-ui/core';
-import DeleteIcon from '@material-ui/icons/Delete';
 import * as expressions from 'angular-expressions';
 import { merge } from 'lodash';
-import DateFnsUtils from '@date-io/date-fns';
-import {
-  MuiPickersUtilsProvider,
-  KeyboardDatePicker
-} from '@material-ui/pickers';
 import { assocPath, compose, map, prop, assoc } from 'ramda';
 import moment from 'moment';
 
+import { makeStyles } from '@material-ui/core/styles';
 import Person from '../classes/Person';
-import LandType from '../classes/LandType';
-import MyInput from './MyInput';
 import InputSideB from './InputSideB';
 import InputSideA from './InputSideA';
 import InputChanges from './InputChanges';
 import InputContractInfo from './InputContractInfo';
 import InputMisc from './InputMisc';
-
-import { makeStyles } from '@material-ui/core/styles';
-
-const log = require('electron-log');
 
 const files = [
   'don_dang_ky_bien_dong.docx',
@@ -73,20 +58,25 @@ function angularParser(tag) {
 }
 
 const generate = (file, data) => {
-  const content = fs.readFileSync(
-    path.resolve(__dirname, `assets/${file}`),
-    'binary'
-  );
-  const zip = new PizZip(content);
-
-  const doc = new Docxtemplater();
-  doc.loadZip(zip).setOptions({ parser: angularParser });
-
-  doc.setData(data);
-
   try {
+    console.log(data);
+    const content = fs.readFileSync(
+      path.resolve(`${data.input.path}/${file}`),
+      'binary'
+    );
+    const zip = new PizZip(content);
+
+    const doc = new Docxtemplater();
+    doc.loadZip(zip).setOptions({ parser: angularParser });
+
+    doc.setData(data);
+
     // render the document (replace all occurences of {first_name} by John, {last_name} by Doe, ...)
     doc.render();
+
+    const buf = doc.getZip().generate({ type: 'nodebuffer' });
+    // buf is a nodejs buffer, you can either write it to a file or do anything else with it.
+    fs.writeFileSync(`${data.output}/${file}`, buf);
   } catch (error) {
     const e = {
       message: error.message,
@@ -94,17 +84,9 @@ const generate = (file, data) => {
       stack: error.stack,
       properties: error.properties
     };
-    console.log(e);
-    alert(e);
-    log.errror(JSON.stringify({ error: e }));
-    // The error thrown here contains additional information when logged with JSON.stringify (it contains a property object).
+    alert(JSON.stringify(e, null, 2));
     throw error;
   }
-
-  const buf = doc.getZip().generate({ type: 'nodebuffer' });
-
-  // buf is a nodejs buffer, you can either write it to a file or do anything else with it.
-  fs.writeFileSync(`${data.output}/${file}`, buf);
 };
 
 const now = new Date();
@@ -153,7 +135,8 @@ const initialValues = {
       text: ''
     },
     authenticateLocation: '',
-    output: null
+    output: null,
+    input: null
   }
 };
 
@@ -254,21 +237,6 @@ export default function() {
     return step === -1;
   };
 
-  const handleSkip = () => {
-    if (!isStepOptional(activeStep)) {
-      // You probably want to guard against something like this
-      // it should never occur unless someone's actively trying to break something.
-      throw new Error("You can't skip a step that isn't optional.");
-    }
-
-    setActiveStep(prevActiveStep => prevActiveStep + 1);
-    setSkipped(prevSkipped => {
-      const newSkipped = new Set(prevSkipped.values());
-      newSkipped.add(activeStep);
-      return newSkipped;
-    });
-  };
-
   const skippedSteps = () => {
     return skipped.size;
   };
@@ -302,27 +270,6 @@ export default function() {
 
   const handleStep = step => () => {
     setActiveStep(step);
-  };
-
-  const handleComplete = () => {
-    const newCompleted = new Set(completed);
-    newCompleted.add(activeStep);
-    setCompleted(newCompleted);
-
-    /**
-     * Sigh... it would be much nicer to replace the following if conditional with
-     * `if (!this.allStepsComplete())` however state is not set when we do this,
-     * thus we have to resort to not being very DRY.
-     */
-    if (completed.size !== totalSteps() - skippedSteps()) {
-      handleNext();
-    }
-  };
-
-  const handleReset = () => {
-    setActiveStep(0);
-    setCompleted(new Set());
-    setSkipped(new Set());
   };
 
   const isStepSkipped = step => {
