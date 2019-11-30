@@ -1,94 +1,12 @@
 import React from 'react';
-import styled from 'styled-components';
-import { Form, Text, ArrayField, Radio, RadioGroup, Scope } from 'informed';
 
-import Input from './Input';
-
-import { TextField, Button, MenuItem, IconButton } from '@material-ui/core';
-import DeleteIcon from '@material-ui/icons/Delete';
-import { FieldArray, useFormikContext } from 'formik';
-import 'date-fns';
-import {
-  MuiPickersUtilsProvider,
-  KeyboardDatePicker
-} from '@material-ui/pickers';
-import DateFnsUtils from '@date-io/date-fns';
-import Person from '../classes/Person';
-
-const now = new Date();
-const initialValues = {
-  sideA: {
-    people: [new Person()]
-  },
-  sideB: {
-    people: [new Person()]
-  },
-  year: now.getFullYear(),
-  changes: {
-    gcn: {
-      number: '',
-      publish: '',
-      approveDate: now,
-      location: ''
-    },
-    before: {
-      square: 0,
-      number: 0,
-      mapNumber: 0,
-      purpose: ''
-    },
-    after: {
-      square: 0,
-      number: 0,
-      mapNumber: 0,
-      purpose: ''
-    },
-    reason: ''
-  },
-  contract: {
-    land: {
-      squareText: '',
-      address: '',
-      purposeText: '',
-      duration: '',
-      source: '',
-      limitation: '',
-      types: []
-    },
-    price: {
-      number: 0,
-      text: ''
-    },
-    authenticateLocation: '',
-    output: null,
-    input: null
-  }
-};
-
-function Home() {
+function Side({ sideName }) {
   return (
-    <Form
-      onSubmit={values => console.log(values)}
-      initialValues={initialValues}
-    >
-      <div>
-        <SideA />
-        <button type="submit">submit</button>
-      </div>
-    </Form>
-  );
-}
-
-export default Home;
-const honorifics = ['Ông', 'Bà'];
-
-function SideA() {
-  return (
-    <Scope scope="sideA">
+    <Scope scope={`side${sideName}`}>
       <ArrayField field="people">
         {({ add, fields }) => (
           <>
-            <h2>Side A</h2>
+            <h2>Side {sideName}</h2>
             <button onClick={add}>add</button>
 
             {fields.map(({ field, key, remove, initialValue }) => (
@@ -148,9 +66,5 @@ function SideA() {
     </Scope>
   );
 }
-const PersonDiv = styled.div`
-  display: grid;
-  grid-template-columns: repeat(6, 100px);
-  grid-gap: 30px;
-  margin-bottom: 30px;
-`;
+
+export default Side;
