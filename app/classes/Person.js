@@ -1,6 +1,8 @@
 export default class Person {
   fullName = '';
 
+  fullNameCap = '';
+
   yearOfBirth = '';
 
   identifier = '';
@@ -12,6 +14,12 @@ export default class Person {
   address = '';
 
   honorific = 'Ông';
+
+  houseNumber = '';
+
+  district = '';
+
+  city = '';
 
   id = Date.now();
 

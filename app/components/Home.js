@@ -1,21 +1,29 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Form, Text, ArrayField, Radio, RadioGroup, Scope } from 'informed';
-
-import Input from './Input';
-
-import { TextField, Button, MenuItem, IconButton } from '@material-ui/core';
-import DeleteIcon from '@material-ui/icons/Delete';
-import { FieldArray, useFormikContext } from 'formik';
-import 'date-fns';
+import { Formik, Form } from 'formik';
 import {
-  MuiPickersUtilsProvider,
-  KeyboardDatePicker
-} from '@material-ui/pickers';
-import DateFnsUtils from '@date-io/date-fns';
+  Button,
+  Step,
+  Stepper,
+  StepButton,
+  Typography
+} from '@material-ui/core';
+import { assocPath, compose, map, prop, assoc } from 'ramda';
+import moment from 'moment';
+
+import { makeStyles } from '@material-ui/core/styles';
 import Person from '../classes/Person';
+import InputChanges from './InputChanges';
+import InputContractInfo from './InputContractInfo';
+import InputMisc from './InputMisc';
+import { generate } from '../classes/Generator';
+import GCN from './GCN';
+import Side from './Side';
+import Money from './Money';
+import { moveSyntheticComments } from 'typescript';
 
 const now = new Date();
+
 const initialValues = {
   sideA: {
     people: [new Person()]
@@ -28,7 +36,7 @@ const initialValues = {
     gcn: {
       number: '',
       publish: '',
-      approveDate: now,
+      approveDate: new Date(),
       location: ''
     },
     before: {
@@ -65,92 +73,201 @@ const initialValues = {
   }
 };
 
-function Home() {
-  return (
-    <Form
-      onSubmit={values => console.log(values)}
-      initialValues={initialValues}
-    >
-      <div>
-        <SideA />
-        <button type="submit">submit</button>
-      </div>
-    </Form>
-  );
+const toString = date => moment(date).format('DD/MM/YYYY');
+
+const formatPeople = people =>
+  people.map(p => ({
+    ...p,
+    idDate: toString(p.idDate),
+    address: `${p.houseNumber} ${p.district} ${p.city}`,
+    fullNameCap: p.fullName.toUpperCase()
+  }));
+
+const handleSubmit = values => {
+  const data = compose(
+    assocPath(
+      ['changes', 'gcn', 'approveDate'],
+      toString(values.changes.gcn.approveDate)
+    ),
+    map(assoc('id', prop('identifier')))
+  )(values);
+
+  data.sideA.people = formatPeople(values.sideA.people);
+
+  data.sideB.people = formatPeople(values.sideB.people);
+
+  data.year = toString(data.year);
+
+  data.sideB.names = data.sideB.people
+    .map(
+      p =>
+        `${p.fullName}, sinh năm ${p.yearOfBirth}, CMND số: ${p.idenfitier} cấp ngày: ${p.idDate} tại ${p.idLocation}`
+    )
+    .join(' và ');
+
+  generate(data);
+};
+
+const useStyles = makeStyles(theme => ({
+  root: {
+    width: '100%'
+  },
+  button: {
+    marginRight: theme.spacing(1)
+  },
+  backButton: {
+    marginRight: theme.spacing(1)
+  },
+  completed: {
+    display: 'inline-block'
+  },
+  instructions: {
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1)
+  }
+}));
+function getSteps() {
+  return [
+    'Nhập thông tin bên A',
+    'Nhập thông tin bên B',
+    'GCN',
+    'Nhập thông tin biến động',
+    'Nhập thông tin hợp đồng',
+    'Nhập thông tin tiền',
+    'Nhập thông tin phụ'
+  ];
 }
-
-export default Home;
-const honorifics = ['Ông', 'Bà'];
-
-function SideA() {
+function getStepContent(step) {
+  switch (step) {
+    case 0:
+      return <Side sideName="A" />;
+    case 1:
+      return <Side sideName="B" />;
+    case 2:
+      return <GCN />;
+    case 3:
+      return <InputChanges />;
+    case 4:
+      return <InputContractInfo />;
+    case 5:
+      return <Money />;
+    case 6:
+      return <InputMisc />;
+    default:
+      return 'Unknown step';
+  }
+}
+export default function() {
+  const classes = useStyles();
+  const [activeStep, setActiveStep] = React.useState(0);
+  const [completed, setCompleted] = React.useState(new Set());
+  const [skipped, setSkipped] = React.useState(new Set());
+  const steps = getSteps();
+  const totalSteps = () => {
+    return getSteps().length;
+  };
+  const isStepOptional = step => {
+    return step === -1;
+  };
+  const skippedSteps = () => {
+    return skipped.size;
+  };
+  const completedSteps = () => {
+    return completed.size;
+  };
+  const allStepsCompleted = () => {
+    return completedSteps() === totalSteps() - skippedSteps();
+  };
+  const isLastStep = () => {
+    return activeStep === totalSteps() - 1;
+  };
+  const handleNext = () => {
+    const newActiveStep =
+      isLastStep() && !allStepsCompleted() // It's the last step, but not all steps have been completed
+        ? // find the first step that has been completed
+          steps.findIndex((step, i) => !completed.has(i))
+        : activeStep + 1;
+    setActiveStep(newActiveStep);
+  };
+  const handleBack = () => {
+    setActiveStep(prevActiveStep => prevActiveStep - 1);
+  };
+  const handleStep = step => () => {
+    setActiveStep(step);
+  };
+  const isStepSkipped = step => {
+    return skipped.has(step);
+  };
+  function isStepComplete(step) {
+    return completed.has(step);
+  }
   return (
-    <Scope scope="sideA">
-      <ArrayField field="people">
-        {({ add, fields }) => (
-          <>
-            <h2>Side A</h2>
-            <button onClick={add}>add</button>
-
-            {fields.map(({ field, key, remove, initialValue }) => (
-              <PersonDiv key={key}>
-                <Input
-                  field={`${field}.honorific`}
-                  as={TextField}
-                  select
-                  label="Ông/Bà"
-                  id="honorific-selector"
-                >
-                  {honorifics.map(h => (
-                    <MenuItem value={h} key={h}>
-                      {h}
-                    </MenuItem>
-                  ))}
-                </Input>
-                <Input
-                  label="Họ và tên"
-                  field={`${field}.fullName`}
-                  initialValue={initialValue.fullName}
-                  style={{ gridColumnEnd: 'span 3' }}
-                />
-                {/* <Input
-                  label="Sinh năm"
-                  type="number"
-                  field={`${field}.yearOfBirth`}
-                />
-                <Input
-                  label="CMND số"
-                  field={`${field}.identifier`}
-                  style={{ gridRow: 2, gridColumn: '1/2' }}
-                />
-                <Input
-                  label="Cấp tại"
-                  field={`${field}.idLocation`}
-                  style={{ gridRow: 2, gridColumnEnd: 'span 2' }}
-                />
-                <Input
-                  label="Địa chỉ"
-                  field={`${field}.address`}
-                  style={{ gridRow: 3, gridColumn: '1/6' }}
-                /> */}
-
-                <IconButton
-                  aria-label="delete"
-                  onClick={() => arrayHelpers.remove(idx)}
-                  style={{ justifySelf: 'start' }}
-                >
-                  <DeleteIcon fontSize="large" />
-                </IconButton>
-              </PersonDiv>
-            ))}
-          </>
+    <Wrapper>
+      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+        {() => (
+          <Form>
+            <div className={classes.root}>
+              <Stepper alternativeLabel nonLinear activeStep={activeStep}>
+                {steps.map((label, index) => {
+                  const stepProps = {};
+                  const buttonProps = {};
+                  if (isStepOptional(index)) {
+                    buttonProps.optional = (
+                      <Typography variant="caption">Optional</Typography>
+                    );
+                  }
+                  if (isStepSkipped(index)) {
+                    stepProps.completed = false;
+                  }
+                  return (
+                    <Step key={label} {...stepProps}>
+                      <StepButton
+                        onClick={handleStep(index)}
+                        completed={isStepComplete(index)}
+                        {...buttonProps}
+                      >
+                        {label}
+                      </StepButton>
+                    </Step>
+                  );
+                })}
+              </Stepper>
+              <div>
+                <div className={classes.instructions}>
+                  {getStepContent(activeStep)}
+                </div>
+                <div>
+                  <Sep />
+                  <Button
+                    disabled={activeStep === 0}
+                    onClick={handleBack}
+                    className={classes.button}
+                  >
+                    Bước trước đó
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleNext}
+                    className={classes.button}
+                  >
+                    Bước kế tiếp
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Form>
         )}
-      </ArrayField>
-    </Scope>
+      </Formik>
+    </Wrapper>
   );
 }
-const PersonDiv = styled.div`
-  display: grid;
-  grid-template-columns: repeat(6, 100px);
-  grid-gap: 30px;
-  margin-bottom: 30px;
+const Wrapper = styled.main`
+  padding: 30px 0;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+`;
+const Sep = styled.div`
+  height: 50px;
 `;

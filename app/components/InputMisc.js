@@ -6,7 +6,7 @@ import { Button } from '@material-ui/core';
 import MyInput from './MyInput';
 
 export default function() {
-  const { setFieldValue } = useFormikContext();
+  const { setFieldValue, values } = useFormikContext();
 
   return (
     <Wrapper>
@@ -36,7 +36,12 @@ export default function() {
           directory="true"
         />
       </Output>
-      <Button variant="contained" color="primary" type="submit">
+      <Button
+        variant="contained"
+        color="primary"
+        type="submit"
+        disabled={!values.input}
+      >
         Xuất
       </Button>
     </Wrapper>

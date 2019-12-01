@@ -13,7 +13,6 @@ export default function() {
 
   return (
     <React.Fragment>
-      <Sep />
       <h3>Thông tin chuyển nhượng</h3>
       <Transfer>
         <MyInput
@@ -124,38 +123,6 @@ export default function() {
           }}
         />
         <span></span>
-
-        <h4>Tiền</h4>
-        <span></span>
-
-        <MyInput
-          label="Giá (bằng số)"
-          type="number"
-          name="contract.price.number"
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <span>
-                  <sup>vnđ</sup>
-                </span>
-              </InputAdornment>
-            )
-          }}
-        />
-        <MyInput
-          label="Giá (bằng chữ)"
-          type="text"
-          name="contract.price.text"
-        />
-
-        <MyInput
-          style={{
-            gridColumnEnd: 'span 2'
-          }}
-          label="Nơi chứng thực"
-          type="text"
-          name="contract.land.authenticateLocation"
-        />
       </Transfer>
     </React.Fragment>
   );
@@ -179,18 +146,6 @@ const Land = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-gap: 30px;
-`;
-
-const Misc = styled(Land)``;
-
-const GCN = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-gap: 30px;
-`;
-
-const Sep = styled.div`
-  height: 50px;
 `;
 
 const Wrapper = styled.main`
