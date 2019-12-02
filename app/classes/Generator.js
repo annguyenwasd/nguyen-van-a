@@ -36,7 +36,7 @@ export const generate = data => {
       alert(JSON.stringify(err, null, 2));
       return;
     }
-    const docFiles = files.filter(f => f.endsWith('doc') || f.endsWith('docx'));
+    const docFiles = files.filter(f => f.endsWith('docx'));
 
     docFiles.forEach(doc => generateFile(doc, data));
 
