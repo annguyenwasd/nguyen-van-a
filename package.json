@@ -276,7 +276,6 @@
     "electron-updater": "^4.0.6",
     "formik": "^2.0.4",
     "history": "^4.9.0",
-    "informed": "^2.11.16",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "pizzip": "^3.0.6",

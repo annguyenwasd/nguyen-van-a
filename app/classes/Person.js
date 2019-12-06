@@ -21,8 +21,6 @@ export default class Person {
 
   city = '';
 
-  id = Date.now();
-
   constructor() {
     this.idDate = new Date();
   }

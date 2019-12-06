@@ -38,8 +38,10 @@ export default function({ sideName }) {
 
               {side.people.map((person, idx) => {
                 const nthPerson = `side${sideName}.people.${idx}`;
+
+                console.log(person);
                 return (
-                  <PersonDiv key={person.identifier}>
+                  <PersonDiv key={`person-${idx}`}>
                     <MyInput
                       name={`${nthPerson}.honorific`}
                       as={TextField}
@@ -66,6 +68,7 @@ export default function({ sideName }) {
                       as={TextField}
                     />
                     <MyInput
+                      type="text"
                       label="CMND số"
                       name={`${nthPerson}.identifier`}
                       as={TextField}

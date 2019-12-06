@@ -96,12 +96,12 @@ const handleSubmit = values => {
 
   data.sideB.people = formatPeople(values.sideB.people);
 
-  data.year = toString(data.year);
+  data.year = data.year.getFullYear();
 
   data.sideB.names = data.sideB.people
     .map(
       p =>
-        `${p.fullName}, sinh năm ${p.yearOfBirth}, CMND số: ${p.idenfitier} cấp ngày: ${p.idDate} tại ${p.idLocation}`
+        `${p.fullName}, sinh năm ${p.yearOfBirth}, CMND số: ${p.identifier} cấp ngày: ${p.idDate} tại ${p.idLocation}`
     )
     .join(' và ');
 
@@ -262,12 +262,14 @@ export default function() {
     </Wrapper>
   );
 }
+
 const Wrapper = styled.main`
   padding: 30px 0;
   display: flex;
   flex-flow: column nowrap;
   align-items: center;
 `;
+
 const Sep = styled.div`
   height: 50px;
 `;

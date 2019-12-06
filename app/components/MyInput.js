@@ -6,4 +6,6 @@ function MyInput({ type, ...props }) {
   return <Field as={TextField} type={type} {...props} />;
 }
 
-export default memo(MyInput);
+export default memo(MyInput, (prevProps, nextProps) => {
+  return prevProps !== nextProps;
+});
