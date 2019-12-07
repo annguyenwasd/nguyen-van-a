@@ -1,23 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
-import { InputAdornment, IconButton, Button } from '@material-ui/core';
+import {
+  TextField,
+  InputAdornment,
+  IconButton,
+  Button
+} from '@material-ui/core';
 import LandType from '../classes/LandType';
-import { useFormikContext, FieldArray } from 'formik';
 import DeleteIcon from '@material-ui/icons/Delete';
-import MyInput, { MoneyFormat } from './MyInput';
+import { useFormContext } from 'react-hook-form';
+import { RHFInput } from 'react-hook-form-input';
+import { remove, append } from 'ramda';
 
 export default function() {
-  const {
-    values: { contract }
-  } = useFormikContext();
+  const { register, unregister, setValue } = useFormContext();
+  const [types, setTypes] = useState([]);
+
+  const handleDelete = idx => {
+    setTypes(remove(idx, 1, types));
+    const nthType = `contract.land.types.${idx}`;
+    unregister(`${nthType}.name`);
+    unregister(`${nthType}.square`);
+  };
 
   return (
     <React.Fragment>
       <h3>Thông tin chuyển nhượng</h3>
       <Transfer>
-        <MyInput
+        <RHFInput
+          register={register}
+          setValue={setValue}
+          as={<TextField />}
           label="Diện tích"
-          type="number"
           name="changes.before.square"
           InputProps={{
             endAdornment: (
@@ -29,99 +43,111 @@ export default function() {
             )
           }}
         />
-
-        <MyInput
+        <RHFInput
+          register={register}
+          setValue={setValue}
+          as={<TextField />}
           label="Diện tích bằng chữ"
-          type="text"
           name="contract.land.squareText"
         />
-        <MyInput
+        <RHFInput
+          register={register}
+          setValue={setValue}
           label="Địa chỉ đất"
+          as={<TextField />}
           style={{
             gridColumnEnd: 'span 2'
           }}
-          type="text"
           name="contract.land.address"
         />
-        <MyInput
+        <RHFInput
+          register={register}
+          setValue={setValue}
+          as={<TextField />}
           style={{
             gridColumnEnd: 'span 2'
           }}
           label="Mục đích sử dụng (bằng chữ)"
-          type="text"
           name="contract.land.purposeText"
         />
-
-        <MyInput
+        <RHFInput
+          register={register}
+          setValue={setValue}
+          as={<TextField />}
           label="Thời hạn sử dụng"
-          type="text"
           name="contract.land.duration"
         />
-        <MyInput
+        <RHFInput
+          register={register}
+          setValue={setValue}
+          as={<TextField />}
           label="Nguồn gốc sử dụng"
-          type="text"
           name="contract.land.source"
         />
-        <MyInput
+        <RHFInput
+          register={register}
+          setValue={setValue}
+          as={<TextField />}
           style={{
             gridColumnEnd: 'span 2'
           }}
           label="Những hạn chế về quyền sử dụng đất"
-          type="text"
           name="contract.land.limitation"
         />
+        <LandTypes>
+          <h4>
+            Các loại đất &nbsp;
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => setTypes(append(new LandType(), types))}
+            >
+              Thêm loại đất
+            </Button>
+          </h4>
 
-        <FieldArray
-          name="contract.land.types"
-          render={arrayHelpers => {
-            return (
-              <LandTypes>
-                <h4>
-                  Các loại đất &nbsp;
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={() => arrayHelpers.push(new LandType())}
+          {types &&
+            types.map((type, idx) => {
+              const nthType = `contract.land.types.${idx}`;
+
+              return (
+                <LandTypeDiv key={type.id}>
+                  <RHFInput
+                    register={register}
+                    setValue={setValue}
+                    as={<TextField />}
+                    label="Tên loại đất"
+                    name={`${nthType}.name`}
+                  />
+
+                  <RHFInput
+                    register={register}
+                    setValue={setValue}
+                    as={<TextField />}
+                    label="Diện tích"
+                    name={`${nthType}.square`}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <span>
+                            m<sup>2</sup>
+                          </span>
+                        </InputAdornment>
+                      )
+                    }}
+                  />
+
+                  <IconButton
+                    aria-label="delete"
+                    onClick={() => handleDelete(idx)}
+                    style={{ justifySelf: 'start' }}
                   >
-                    Thêm loại đất
-                  </Button>
-                </h4>
-
-                {contract.land.types.map((type, idx) => {
-                  const nthType = `contract.land.types.${idx}`;
-                  return (
-                    <LandTypeDiv key={type.id}>
-                      <MyInput label="Tên loại đất" name={`${nthType}.name`} />
-                      <MyInput
-                        label="Diện tích"
-                        type="number"
-                        name={`${nthType}.square`}
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <span>
-                                m<sup>2</sup>
-                              </span>
-                            </InputAdornment>
-                          )
-                        }}
-                      />
-
-                      <IconButton
-                        aria-label="delete"
-                        disabled={contract.land.types.length < 2}
-                        onClick={() => arrayHelpers.remove(idx)}
-                        style={{ justifySelf: 'start' }}
-                      >
-                        <DeleteIcon fontSize="large" />
-                      </IconButton>
-                    </LandTypeDiv>
-                  );
-                })}
-              </LandTypes>
-            );
-          }}
-        />
+                    <DeleteIcon fontSize="large" />
+                  </IconButton>
+                </LandTypeDiv>
+              );
+            })}
+        </LandTypes>
         <span></span>
       </Transfer>
     </React.Fragment>

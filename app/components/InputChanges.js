@@ -1,14 +1,19 @@
 import React from 'react';
 import styled from 'styled-components';
 import { InputAdornment, TextField } from '@material-ui/core';
-import { useFormikContext } from 'formik';
-import MyInput from './MyInput';
+import { useFormContext } from 'react-hook-form';
+import { RHFInput } from 'react-hook-form-input';
+import { isEmpty } from 'ramda';
 
-export default function() {
-  const {
-    values: { changes },
-    setFieldValue
-  } = useFormikContext();
+export default function InputChanges() {
+  const { register, setValue, getValues } = useFormContext();
+
+  const copy = name => {
+    const values = getValues();
+    const b4Value = values[`changes.before.${name}`];
+    const afterValue = values[`changes.after.${name}`];
+    setValue(`changes.after.${name}`, b4Value);
+  };
 
   return (
     <React.Fragment>
@@ -18,52 +23,71 @@ export default function() {
         <h4>Trước biến động</h4>
         <h4>Sau biến động</h4>
 
-        <MyInput
+        <RHFInput
+          register={register}
+          setValue={setValue}
+          as={<TextField />}
           label="Thửa đất số"
           type="number"
           name="changes.before.number"
-          as={TextField}
-        />
-        <MyInput
-          label="Thửa đất số"
-          type="number"
-          value={changes.after.number || changes.before.number}
-          name="changes.after.number"
-          as={TextField}
+          onChange={() => copy('number')}
         />
 
-        <MyInput
+        <RHFInput
+          register={register}
+          setValue={setValue}
+          as={<TextField />}
+          label="Thửa đất số"
+          type="number"
+          name="changes.after.number"
+        />
+
+        <RHFInput
+          register={register}
+          setValue={setValue}
+          as={<TextField />}
           label="Tờ bản đồ số"
           type="number"
           name="changes.before.mapNumber"
-          as={TextField}
-        />
-        <MyInput
-          label="Tờ bản đồ số"
-          type="number"
-          value={changes.after.mapNumber || changes.before.mapNumber}
-          name="changes.after.mapNumber"
-          as={TextField}
+          onChange={() => copy('mapNumber')}
         />
 
-        <MyInput
+        <RHFInput
+          register={register}
+          setValue={setValue}
+          as={<TextField />}
+          label="Tờ bản đồ số"
+          type="number"
+          name="changes.after.mapNumber"
+        />
+
+        <RHFInput
+          register={register}
+          setValue={setValue}
+          as={<TextField />}
           label="Mục đích sử dụng (kí hiệu)"
           type="text"
           name="changes.before.purpose"
-          as={TextField}
+          onChange={() => copy('purpose')}
         />
-        <MyInput
+
+        <RHFInput
+          register={register}
+          setValue={setValue}
+          as={<TextField />}
           label="Mục đích sử dụng (kí hiệu)"
           type="text"
           name="changes.after.purpose"
-          value={changes.after.purpose || changes.before.purpose}
-          as={TextField}
         />
 
-        <MyInput
+        <RHFInput
+          register={register}
+          setValue={setValue}
+          as={<TextField />}
           label="Diện tích"
           type="number"
           name="changes.before.square"
+          onChange={() => copy('square')}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -73,12 +97,14 @@ export default function() {
               </InputAdornment>
             )
           }}
-          as={TextField}
         />
-        <MyInput
+
+        <RHFInput
+          register={register}
+          setValue={setValue}
+          as={<TextField />}
           label="Diện tích"
           type="number"
-          value={changes.after.square || changes.before.square}
           name="changes.after.square"
           InputProps={{
             endAdornment: (
@@ -89,17 +115,18 @@ export default function() {
               </InputAdornment>
             )
           }}
-          as={TextField}
         />
 
-        <MyInput
+        <RHFInput
+          register={register}
+          setValue={setValue}
+          as={<TextField />}
           label="Lý do biến động"
           type="text"
           name="changes.reason"
           style={{
             gridColumnEnd: 'span 2'
           }}
-          as={TextField}
         />
       </Land>
     </React.Fragment>

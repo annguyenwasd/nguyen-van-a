@@ -1,59 +1,68 @@
+import 'date-fns';
 import React from 'react';
 import styled from 'styled-components';
-import MyInput from './MyInput';
-import { TextField } from '@material-ui/core';
-import { FieldArray, useFormikContext } from 'formik';
-import 'date-fns';
+import { RHFInput } from 'react-hook-form-input';
+import { useFormContext } from 'react-hook-form';
 import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker
 } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
+import { TextField } from '@material-ui/core';
 
 function GCN() {
-  const {
-    values: { changes },
-    setFieldValue
-  } = useFormikContext();
+  const { register, setValue } = useFormContext();
+
   return (
     <React.Fragment>
       <h2>Thông tin đăng kí biến động</h2>
       <h3>GCN</h3>
       <GCNDiv>
-        <MyInput
+        <RHFInput
+          register={register}
+          setValue={setValue}
+          as={<TextField />}
           label="Số vào sổ cấp GCN"
           name="changes.gcn.number"
-          as={TextField}
-        />
-        <MyInput
-          label="Số phát hành GCN"
-          name="changes.gcn.publish"
-          as={TextField}
         />
 
-        <MuiPickersUtilsProvider utils={DateFnsUtils}>
-          <KeyboardDatePicker
-            disableToolbar
-            variant="inline"
-            format="dd/MM/yyyy"
-            id="date-picker-inline"
-            label="Ngày cấp GCN"
-            KeyboardButtonProps={{
-              'aria-label': 'change date'
-            }}
-            value={changes.gcn.approveDate}
-            onChange={date => {
-              setFieldValue('changes.gcn.approveDate', date);
-            }}
-          />
-        </MuiPickersUtilsProvider>
-        <MyInput
+        <RHFInput
+          register={register}
+          setValue={setValue}
+          as={<TextField />}
+          label="Số phát hành GCN"
+          name="changes.gcn.publish"
+        />
+
+        <RHFInput
+          register={register}
+          as={
+            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+              <KeyboardDatePicker
+                onChange={setValue}
+                disableToolbar
+                variant="inline"
+                format="dd/MM/yyyy"
+                label="Ngày cấp GCN"
+                id="date-picker-inline"
+                KeyboardButtonProps={{
+                  'aria-label': 'change date'
+                }}
+              />
+            </MuiPickersUtilsProvider>
+          }
+          name="changes.gcn.approveDate"
+        />
+
+        <RHFInput
+          register={register}
+          setValue={setValue}
+          as={<TextField />}
           style={{
             gridColumnEnd: 'span 3'
           }}
           label="Nơi cấp"
           name="changes.gcn.location"
-          as={TextField}
         />
       </GCNDiv>
     </React.Fragment>

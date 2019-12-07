@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Formik, Form } from 'formik';
+import useForm, { FormContext } from 'react-hook-form';
 import {
   Button,
   Step,
@@ -20,7 +20,6 @@ import { generate } from '../classes/Generator';
 import GCN from './GCN';
 import Side from './Side';
 import Money from './Money';
-import { moveSyntheticComments } from 'typescript';
 
 const now = new Date();
 
@@ -36,19 +35,19 @@ const initialValues = {
     gcn: {
       number: '',
       publish: '',
-      approveDate: new Date(),
+      approveDate: now,
       location: ''
     },
     before: {
-      square: 0,
-      number: 0,
-      mapNumber: 0,
+      square: '',
+      number: '',
+      mapNumber: '',
       purpose: ''
     },
     after: {
-      square: 0,
-      number: 0,
-      mapNumber: 0,
+      square: '',
+      number: '',
+      mapNumber: '',
       purpose: ''
     },
     reason: ''
@@ -64,7 +63,7 @@ const initialValues = {
       types: []
     },
     price: {
-      number: 0,
+      number: '',
       text: ''
     },
     authenticateLocation: '',
@@ -95,8 +94,6 @@ const handleSubmit = values => {
   data.sideA.people = formatPeople(values.sideA.people);
 
   data.sideB.people = formatPeople(values.sideB.people);
-
-  data.year = data.year.getFullYear();
 
   data.sideB.names = data.sideB.people
     .map(
@@ -163,6 +160,11 @@ export default function() {
   const [completed, setCompleted] = React.useState(new Set());
   const [skipped, setSkipped] = React.useState(new Set());
   const steps = getSteps();
+
+  const methods = useForm({
+    defaultValues: initialValues
+  });
+
   const totalSteps = () => {
     return getSteps().length;
   };
@@ -201,65 +203,69 @@ export default function() {
   function isStepComplete(step) {
     return completed.has(step);
   }
+
   return (
-    <Wrapper>
-      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-        {() => (
-          <Form>
-            <div className={classes.root}>
-              <Stepper alternativeLabel nonLinear activeStep={activeStep}>
-                {steps.map((label, index) => {
-                  const stepProps = {};
-                  const buttonProps = {};
-                  if (isStepOptional(index)) {
-                    buttonProps.optional = (
-                      <Typography variant="caption">Optional</Typography>
-                    );
-                  }
-                  if (isStepSkipped(index)) {
-                    stepProps.completed = false;
-                  }
-                  return (
-                    <Step key={label} {...stepProps}>
-                      <StepButton
-                        onClick={handleStep(index)}
-                        completed={isStepComplete(index)}
-                        {...buttonProps}
-                      >
-                        {label}
-                      </StepButton>
-                    </Step>
+    <FormContext {...methods}>
+      <Wrapper>
+        <form
+          onSubmit={methods.handleSubmit(values => {
+            console.log(values);
+          })}
+        >
+          <div className={classes.root}>
+            <Stepper alternativeLabel nonLinear activeStep={activeStep}>
+              {steps.map((label, index) => {
+                const stepProps = {};
+                const buttonProps = {};
+                if (isStepOptional(index)) {
+                  buttonProps.optional = (
+                    <Typography variant="caption">Optional</Typography>
                   );
-                })}
-              </Stepper>
+                }
+                if (isStepSkipped(index)) {
+                  stepProps.completed = false;
+                }
+                return (
+                  <Step key={label} {...stepProps}>
+                    <StepButton
+                      onClick={handleStep(index)}
+                      completed={isStepComplete(index)}
+                      {...buttonProps}
+                    >
+                      {label}
+                    </StepButton>
+                  </Step>
+                );
+              })}
+            </Stepper>
+            <div>
+              <div className={classes.instructions}>
+                {getStepContent(activeStep)}
+              </div>
               <div>
-                <div className={classes.instructions}>
-                  {getStepContent(activeStep)}
-                </div>
-                <div>
-                  <Sep />
-                  <Button
-                    disabled={activeStep === 0}
-                    onClick={handleBack}
-                    className={classes.button}
-                  >
-                    Bước trước đó
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleNext}
-                    className={classes.button}
-                  >
-                    Bước kế tiếp
-                  </Button>
-                </div>
+                <Sep />
+                <Button
+                  disabled={activeStep === 0}
+                  onClick={handleBack}
+                  className={classes.button}
+                >
+                  Bước trước đó
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleNext}
+                  className={classes.button}
+                >
+                  Bước kế tiếp
+                </Button>
+                <button>submit</button>
               </div>
             </div>
-          </Form>
-        )}
-      </Formik>
-    </Wrapper>
+          </div>
+        </form>
+      </Wrapper>
+    </FormContext>
   );
 }
 

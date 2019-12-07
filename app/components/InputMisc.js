@@ -1,23 +1,30 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useFormikContext } from 'formik';
-import { Button } from '@material-ui/core';
-
-import MyInput from './MyInput';
+import { Button, TextField } from '@material-ui/core';
+import { useFormContext } from 'react-hook-form';
+import { RHFInput } from 'react-hook-form-input';
 
 export default function() {
-  const { setFieldValue, values } = useFormikContext();
+  const { register, setValue, getValues } = useFormContext();
+
+  const values = getValues({ nest: true });
 
   return (
     <Wrapper>
-      <MyInput label="Năm làm hồ sơ" type="number" name="year" />
+      <RHFInput
+        register={register}
+        setValue={setValue}
+        as={<TextField />}
+        label="Năm làm hồ sơ"
+        type="number"
+        name="year"
+      />
 
       <Output>
         <label htmlFor="input">Thư mục chứa file word</label>
         <input
-          onChange={e => {
-            setFieldValue('input', e.target.files[0]);
-          }}
+          ref={register}
+          name="input"
           id="input"
           type="file"
           webkitdirectory="true"
@@ -27,9 +34,8 @@ export default function() {
       <Output>
         <label htmlFor="output">Thư mục xuất</label>
         <input
-          onChange={e => {
-            setFieldValue('output', e.target.files[0]);
-          }}
+          ref={register}
+          name="output"
           id="output"
           type="file"
           webkitdirectory="true"

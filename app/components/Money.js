@@ -1,15 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
-import { InputAdornment, IconButton, Button } from '@material-ui/core';
-import LandType from '../classes/LandType';
-import { useFormikContext, FieldArray } from 'formik';
-import DeleteIcon from '@material-ui/icons/Delete';
-import MyInput, { MoneyFormat } from './MyInput';
+import { TextField, InputAdornment } from '@material-ui/core';
+import { useFormContext } from 'react-hook-form';
+import { RHFInput } from 'react-hook-form-input';
 
+import LandType from '../classes/LandType';
 export default function() {
-  const {
-    values: { contract }
-  } = useFormikContext();
+  const { register, setValue } = useFormContext();
 
   return (
     <React.Fragment>
@@ -17,7 +14,10 @@ export default function() {
         <h4>Tiền</h4>
         <span></span>
 
-        <MyInput
+        <RHFInput
+          register={register}
+          setValue={setValue}
+          as={<TextField />}
           label="Giá (bằng số)"
           name="contract.price.number"
           InputProps={{
@@ -31,13 +31,19 @@ export default function() {
           }}
         />
 
-        <MyInput
+        <RHFInput
+          register={register}
+          setValue={setValue}
+          as={<TextField />}
           label="Giá (bằng chữ)"
           type="text"
           name="contract.price.text"
         />
 
-        <MyInput
+        <RHFInput
+          register={register}
+          setValue={setValue}
+          as={<TextField />}
           style={{
             gridColumnEnd: 'span 2'
           }}
@@ -56,8 +62,3 @@ const Transfer = styled.div`
   grid-gap: 30px;
 `;
 
-const Land = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-gap: 30px;
-`;
