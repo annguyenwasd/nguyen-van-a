@@ -9,21 +9,28 @@ import {
   KeyboardDatePicker
 } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
-import { useFormContext } from 'react-hook-form';
+import useForm from 'react-hook-form';
 import { RHFInput } from 'react-hook-form-input';
 import { append, remove, pathOr } from 'ramda';
+import { useStateMachine } from 'little-state-machine';
+import updateAction from '../utils/updateAction';
 
 const honorifics = ['Ông', 'Bà'];
 
 export default function({ sideName }) {
-  const { register, setValue, getValues } = useFormContext();
-  const values = getValues();
+  const { register, handleSubmit, setValue } = useForm();
+  const { action, state } = useStateMachine(updateAction);
+
   const [people, setPeople] = useState(
-    pathOr([], [`side${sideName}`, 'people'], values)
+    pathOr([], [`side${sideName}`, 'people'], state)
   );
 
+  const onSubmit = data => {
+    action(data);
+  };
+
   return (
-    <React.Fragment>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <People>
         <h2>
           Bên {sideName} &nbsp;
@@ -146,7 +153,7 @@ export default function({ sideName }) {
           );
         })}
       </People>
-    </React.Fragment>
+    </form>
   );
 }
 

@@ -1,19 +1,25 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Button, TextField } from '@material-ui/core';
-import { useFormContext } from 'react-hook-form';
 import { RHFInput } from 'react-hook-form-input';
+import useForm from 'react-hook-form';
+import { useStateMachine } from 'little-state-machine';
+import updateAction from '../utils/updateAction';
 
 export default function() {
-  const { register, setValue, getValues } = useFormContext();
+  const { action, state } = useStateMachine(updateAction);
+  const { register, handleSubmit, setValue, watch } = useForm(state);
 
-  const values = getValues({ nest: true });
+  const onSubmit = values => {
+    action(values);
+  };
 
   return (
-    <Wrapper>
+    <Wrapper onSubmit={handleSubmit(onSubmit)}>
       <RHFInput
         register={register}
         setValue={setValue}
+        defaultValue={state.year}
         as={<TextField />}
         label="Năm làm hồ sơ"
         type="number"
@@ -25,6 +31,7 @@ export default function() {
         <input
           ref={register}
           name="input"
+          defaultValue={state.input}
           id="input"
           type="file"
           webkitdirectory="true"
@@ -35,6 +42,7 @@ export default function() {
         <label htmlFor="output">Thư mục xuất</label>
         <input
           ref={register}
+          defaultValue={state.output}
           name="output"
           id="output"
           type="file"
@@ -46,7 +54,7 @@ export default function() {
         variant="contained"
         color="primary"
         type="submit"
-        disabled={!values.input}
+        disabled={!state.input}
       >
         Xuất
       </Button>
@@ -54,7 +62,7 @@ export default function() {
   );
 }
 
-const Wrapper = styled.div`
+const Wrapper = styled.form`
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-gap: 30px;

@@ -1,12 +1,15 @@
 import React from 'react';
 import styled from 'styled-components';
 import { InputAdornment, TextField } from '@material-ui/core';
-import { useFormContext } from 'react-hook-form';
+import useForm from 'react-hook-form';
 import { RHFInput } from 'react-hook-form-input';
 import { isEmpty } from 'ramda';
+import { useStateMachine } from 'little-state-machine';
+import updateAction from '../utils/updateAction';
 
 export default function InputChanges() {
-  const { register, setValue, getValues } = useFormContext();
+  const { action, state } = useStateMachine(updateAction);
+  const { register, handleSubmit, setValue, watch } = useForm(state);
 
   const copy = name => {
     const values = getValues();
@@ -15,8 +18,12 @@ export default function InputChanges() {
     setValue(`changes.after.${name}`, b4Value);
   };
 
+  console.log(state);
+
+  const onSubmit = values => action(values);
+
   return (
-    <React.Fragment>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <h2>Thông tin đăng kí biến động</h2>
 
       <Land>
@@ -26,6 +33,7 @@ export default function InputChanges() {
         <RHFInput
           register={register}
           setValue={setValue}
+          defaultValue={state.changes.before.number}
           as={<TextField />}
           label="Thửa đất số"
           type="number"
@@ -36,6 +44,7 @@ export default function InputChanges() {
         <RHFInput
           register={register}
           setValue={setValue}
+          defaultValue={state.changes.after.number}
           as={<TextField />}
           label="Thửa đất số"
           type="number"
@@ -45,6 +54,7 @@ export default function InputChanges() {
         <RHFInput
           register={register}
           setValue={setValue}
+          defaultValue={state.changes.before.mapNumber}
           as={<TextField />}
           label="Tờ bản đồ số"
           type="number"
@@ -55,6 +65,7 @@ export default function InputChanges() {
         <RHFInput
           register={register}
           setValue={setValue}
+          defaultValue={state.changes.after.mapNumber}
           as={<TextField />}
           label="Tờ bản đồ số"
           type="number"
@@ -64,6 +75,7 @@ export default function InputChanges() {
         <RHFInput
           register={register}
           setValue={setValue}
+          defaultValue={state.changes.before.purpose}
           as={<TextField />}
           label="Mục đích sử dụng (kí hiệu)"
           type="text"
@@ -74,6 +86,7 @@ export default function InputChanges() {
         <RHFInput
           register={register}
           setValue={setValue}
+          defaultValue={state.changes.after.purpose}
           as={<TextField />}
           label="Mục đích sử dụng (kí hiệu)"
           type="text"
@@ -83,6 +96,7 @@ export default function InputChanges() {
         <RHFInput
           register={register}
           setValue={setValue}
+          defaultValue={state.changes.before.square}
           as={<TextField />}
           label="Diện tích"
           type="number"
@@ -103,6 +117,7 @@ export default function InputChanges() {
           register={register}
           setValue={setValue}
           as={<TextField />}
+          defaultValue={state.changes.after.square}
           label="Diện tích"
           type="number"
           name="changes.after.square"
@@ -120,6 +135,7 @@ export default function InputChanges() {
         <RHFInput
           register={register}
           setValue={setValue}
+          defaultValue={state.changes.reason}
           as={<TextField />}
           label="Lý do biến động"
           type="text"
@@ -129,7 +145,7 @@ export default function InputChanges() {
           }}
         />
       </Land>
-    </React.Fragment>
+    </form>
   );
 }
 

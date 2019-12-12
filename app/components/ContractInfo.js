@@ -8,13 +8,21 @@ import {
 } from '@material-ui/core';
 import LandType from '../classes/LandType';
 import DeleteIcon from '@material-ui/icons/Delete';
-import { useFormContext } from 'react-hook-form';
+import useForm from 'react-hook-form';
 import { RHFInput } from 'react-hook-form-input';
 import { remove, append } from 'ramda';
+import { useStateMachine } from 'little-state-machine';
+import updateAction from '../utils/updateAction';
 
 export default function() {
-  const { register, unregister, setValue } = useFormContext();
-  const [types, setTypes] = useState([]);
+  const { action, state } = useStateMachine(updateAction);
+  const { register, handleSubmit, setValue, watch } = useForm(state);
+
+  const [types, setTypes] = useState(state.contract.land.types);
+
+  const onSubmit = values => {
+    action(values);
+  };
 
   const handleDelete = idx => {
     setTypes(remove(idx, 1, types));
@@ -24,7 +32,7 @@ export default function() {
   };
 
   return (
-    <React.Fragment>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <h3>Thông tin chuyển nhượng</h3>
       <Transfer>
         <RHFInput
@@ -32,6 +40,7 @@ export default function() {
           setValue={setValue}
           as={<TextField />}
           label="Diện tích"
+          defaultValue={state.changes.before.square}
           name="changes.before.square"
           InputProps={{
             endAdornment: (
@@ -46,6 +55,7 @@ export default function() {
         <RHFInput
           register={register}
           setValue={setValue}
+          defaultValue={state.contract.land.squareText}
           as={<TextField />}
           label="Diện tích bằng chữ"
           name="contract.land.squareText"
@@ -53,6 +63,7 @@ export default function() {
         <RHFInput
           register={register}
           setValue={setValue}
+          defaultValue={state.contract.land.address}
           label="Địa chỉ đất"
           as={<TextField />}
           style={{
@@ -63,6 +74,7 @@ export default function() {
         <RHFInput
           register={register}
           setValue={setValue}
+          defaultValue={state.contract.land.purposeText}
           as={<TextField />}
           style={{
             gridColumnEnd: 'span 2'
@@ -73,6 +85,7 @@ export default function() {
         <RHFInput
           register={register}
           setValue={setValue}
+          defaultValue={state.contract.land.duration}
           as={<TextField />}
           label="Thời hạn sử dụng"
           name="contract.land.duration"
@@ -80,6 +93,7 @@ export default function() {
         <RHFInput
           register={register}
           setValue={setValue}
+          defaultValue={state.contract.land.source}
           as={<TextField />}
           label="Nguồn gốc sử dụng"
           name="contract.land.source"
@@ -87,6 +101,7 @@ export default function() {
         <RHFInput
           register={register}
           setValue={setValue}
+          defaultValue={state.contract.land.limitation}
           as={<TextField />}
           style={{
             gridColumnEnd: 'span 2'
@@ -150,7 +165,7 @@ export default function() {
         </LandTypes>
         <span></span>
       </Transfer>
-    </React.Fragment>
+    </form>
   );
 }
 

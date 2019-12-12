@@ -1,15 +1,22 @@
 import React from 'react';
 import styled from 'styled-components';
 import { TextField, InputAdornment } from '@material-ui/core';
-import { useFormContext } from 'react-hook-form';
 import { RHFInput } from 'react-hook-form-input';
-
+import useForm from 'react-hook-form';
+import { useStateMachine } from 'little-state-machine';
+import updateAction from '../utils/updateAction';
 import LandType from '../classes/LandType';
+
 export default function() {
-  const { register, setValue } = useFormContext();
+  const { action, state } = useStateMachine(updateAction);
+  const { register, handleSubmit, setValue, watch } = useForm(state);
+
+  const onSubmit = values => {
+    action(values);
+  };
 
   return (
-    <React.Fragment>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <Transfer>
         <h4>Tiền</h4>
         <span></span>
@@ -17,6 +24,7 @@ export default function() {
         <RHFInput
           register={register}
           setValue={setValue}
+          defaultValue={state.contract.price.number}
           as={<TextField />}
           label="Giá (bằng số)"
           name="contract.price.number"
@@ -34,6 +42,7 @@ export default function() {
         <RHFInput
           register={register}
           setValue={setValue}
+          defaultValue={state.contract.price.text}
           as={<TextField />}
           label="Giá (bằng chữ)"
           type="text"
@@ -43,6 +52,7 @@ export default function() {
         <RHFInput
           register={register}
           setValue={setValue}
+          defaultValue={state.contract.land.authenticateLocation}
           as={<TextField />}
           style={{
             gridColumnEnd: 'span 2'
@@ -52,7 +62,7 @@ export default function() {
           name="contract.land.authenticateLocation"
         />
       </Transfer>
-    </React.Fragment>
+    </form>
   );
 }
 
@@ -61,4 +71,3 @@ const Transfer = styled.div`
   grid-template-columns: 1fr 1fr;
   grid-gap: 30px;
 `;
-

@@ -10,13 +10,15 @@ import {
 } from '@material-ui/core';
 import { assocPath, compose, map, prop, assoc } from 'ramda';
 import moment from 'moment';
+import { StateMachineProvider, createStore } from 'little-state-machine';
+import { HashRouter as Router, Route, Link } from 'react-router-dom';
 
 import { makeStyles } from '@material-ui/core/styles';
 import Person from '../classes/Person';
-import InputChanges from './InputChanges';
-import InputContractInfo from './InputContractInfo';
-import InputMisc from './InputMisc';
-import { generate } from '../classes/Generator';
+import Changes from './Changes';
+import ContractInfo from './ContractInfo';
+import Misc from './Misc';
+import { generate } from '../utils/generator';
 import GCN from './GCN';
 import Side from './Side';
 import Money from './Money';
@@ -33,13 +35,13 @@ const initialValues = {
   year: now.getFullYear(),
   changes: {
     gcn: {
-      number: '',
+      number: '1234',
       publish: '',
       approveDate: now,
       location: ''
     },
     before: {
-      square: '',
+      square: 2222,
       number: '',
       mapNumber: '',
       purpose: ''
@@ -105,167 +107,30 @@ const handleSubmit = values => {
   generate(data);
 };
 
-const useStyles = makeStyles(theme => ({
-  root: {
-    width: '100%'
-  },
-  button: {
-    marginRight: theme.spacing(1)
-  },
-  backButton: {
-    marginRight: theme.spacing(1)
-  },
-  completed: {
-    display: 'inline-block'
-  },
-  instructions: {
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(1)
-  }
-}));
-function getSteps() {
-  return [
-    'Nhập thông tin bên A',
-    'Nhập thông tin bên B',
-    'GCN',
-    'Nhập thông tin biến động',
-    'Nhập thông tin hợp đồng',
-    'Nhập thông tin tiền',
-    'Nhập thông tin phụ'
-  ];
-}
-function getStepContent(step) {
-  switch (step) {
-    case 0:
-      return <Side sideName="A" />;
-    case 1:
-      return <Side sideName="B" />;
-    case 2:
-      return <GCN />;
-    case 3:
-      return <InputChanges />;
-    case 4:
-      return <InputContractInfo />;
-    case 5:
-      return <Money />;
-    case 6:
-      return <InputMisc />;
-    default:
-      return 'Unknown step';
-  }
-}
-export default function() {
-  const classes = useStyles();
-  const [activeStep, setActiveStep] = React.useState(0);
-  const [completed, setCompleted] = React.useState(new Set());
-  const [skipped, setSkipped] = React.useState(new Set());
-  const steps = getSteps();
+createStore(initialValues);
 
-  const methods = useForm({
-    defaultValues: initialValues
-  });
-
-  const totalSteps = () => {
-    return getSteps().length;
-  };
-  const isStepOptional = step => {
-    return step === -1;
-  };
-  const skippedSteps = () => {
-    return skipped.size;
-  };
-  const completedSteps = () => {
-    return completed.size;
-  };
-  const allStepsCompleted = () => {
-    return completedSteps() === totalSteps() - skippedSteps();
-  };
-  const isLastStep = () => {
-    return activeStep === totalSteps() - 1;
-  };
-  const handleNext = () => {
-    const newActiveStep =
-      isLastStep() && !allStepsCompleted() // It's the last step, but not all steps have been completed
-        ? // find the first step that has been completed
-          steps.findIndex((step, i) => !completed.has(i))
-        : activeStep + 1;
-    setActiveStep(newActiveStep);
-  };
-  const handleBack = () => {
-    setActiveStep(prevActiveStep => prevActiveStep - 1);
-  };
-  const handleStep = step => () => {
-    setActiveStep(step);
-  };
-  const isStepSkipped = step => {
-    return skipped.has(step);
-  };
-  function isStepComplete(step) {
-    return completed.has(step);
-  }
-
+export default function Home() {
   return (
-    <FormContext {...methods}>
+    <StateMachineProvider>
       <Wrapper>
-        <form
-          onSubmit={methods.handleSubmit(values => {
-            console.log(values);
-          })}
-        >
-          <div className={classes.root}>
-            <Stepper alternativeLabel nonLinear activeStep={activeStep}>
-              {steps.map((label, index) => {
-                const stepProps = {};
-                const buttonProps = {};
-                if (isStepOptional(index)) {
-                  buttonProps.optional = (
-                    <Typography variant="caption">Optional</Typography>
-                  );
-                }
-                if (isStepSkipped(index)) {
-                  stepProps.completed = false;
-                }
-                return (
-                  <Step key={label} {...stepProps}>
-                    <StepButton
-                      onClick={handleStep(index)}
-                      completed={isStepComplete(index)}
-                      {...buttonProps}
-                    >
-                      {label}
-                    </StepButton>
-                  </Step>
-                );
-              })}
-            </Stepper>
-            <div>
-              <div className={classes.instructions}>
-                {getStepContent(activeStep)}
-              </div>
-              <div>
-                <Sep />
-                <Button
-                  disabled={activeStep === 0}
-                  onClick={handleBack}
-                  className={classes.button}
-                >
-                  Bước trước đó
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleNext}
-                  className={classes.button}
-                >
-                  Bước kế tiếp
-                </Button>
-                <button>submit</button>
-              </div>
-            </div>
-          </div>
-        </form>
+        <Router>
+          <Link to="/step1">Nhập thông tin bên A</Link>
+          <Link to="/step2">Nhập thông tin bên B</Link>
+          <Link to="/step3">GCN</Link>
+          <Link to="/step4">Nhập thông tin biến động</Link>
+          <Link to="/step5">Nhập thông tin hợp đồng</Link>
+          <Link to="/step6">Nhập thông tin tiền</Link>
+          <Link to="/step7">Nhập thông tin phụ</Link>
+          <Route exact path="/step1" render={() => <Side sideName="A" />} />
+          <Route exact path="/step2" render={() => <Side sideName="B" />} />
+          <Route exact path="/step3" component={GCN} />
+          <Route exact path="/step4" component={Changes} />
+          <Route exact path="/step5" component={ContractInfo} />
+          <Route exact path="/step6" component={Money} />
+          <Route exact path="/step7" component={Misc} />
+        </Router>
       </Wrapper>
-    </FormContext>
+    </StateMachineProvider>
   );
 }
 
