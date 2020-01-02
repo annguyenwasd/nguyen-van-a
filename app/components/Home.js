@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import useForm, { FormContext } from 'react-hook-form';
+import { useForm } from 'react-form';
 import {
   Button,
   Step,
@@ -8,12 +8,8 @@ import {
   StepButton,
   Typography
 } from '@material-ui/core';
-import { assocPath, compose, map, prop, assoc } from 'ramda';
+import { assocPath, compose, map, prop, assoc, mergeDeepRight } from 'ramda';
 import moment from 'moment';
-import { StateMachineProvider, createStore } from 'little-state-machine';
-import { HashRouter as Router, Route, Link } from 'react-router-dom';
-
-import { makeStyles } from '@material-ui/core/styles';
 import Person from '../classes/Person';
 import Changes from './Changes';
 import ContractInfo from './ContractInfo';
@@ -107,30 +103,83 @@ const handleSubmit = values => {
   generate(data);
 };
 
-createStore(initialValues);
+const steps = [
+  'Nhập thông tin bên A',
+  'Nhập thông tin bên B',
+  'GCN',
+  'Nhập thông tin biến động',
+  'Nhập thông tin hợp đồng',
+  'Nhập thông tin tiền',
+  'Nhập thông tin phụ'
+];
 
 export default function Home() {
+  const [data, setData] = React.useState(initialValues);
+  const [activeStep, setActiveStep] = React.useState(0);
+  const { Form } = useForm({
+    defaultValues: data,
+    onSubmit: values => {
+      console.log(values);
+    },
+    debugForm: true
+  });
+
+  const getStepContent = step => {
+    switch (step) {
+      case 0:
+        return <Side sideName="A" initialValues={data} />;
+      case 1:
+        return <Side sideName="B" initialValues={data} />;
+      case 2:
+        return <GCN />;
+      case 3:
+        return <Changes />;
+      case 4:
+        return <ContractInfo />;
+      case 5:
+        return <Money />;
+      case 6:
+        return <Misc />;
+      default:
+        return null;
+    }
+  };
+
   return (
-    <StateMachineProvider>
-      <Wrapper>
-        <Router>
-          <Link to="/step1">Nhập thông tin bên A</Link>
-          <Link to="/step2">Nhập thông tin bên B</Link>
-          <Link to="/step3">GCN</Link>
-          <Link to="/step4">Nhập thông tin biến động</Link>
-          <Link to="/step5">Nhập thông tin hợp đồng</Link>
-          <Link to="/step6">Nhập thông tin tiền</Link>
-          <Link to="/step7">Nhập thông tin phụ</Link>
-          <Route exact path="/step1" render={() => <Side sideName="A" />} />
-          <Route exact path="/step2" render={() => <Side sideName="B" />} />
-          <Route exact path="/step3" component={GCN} />
-          <Route exact path="/step4" component={Changes} />
-          <Route exact path="/step5" component={ContractInfo} />
-          <Route exact path="/step6" component={Money} />
-          <Route exact path="/step7" component={Misc} />
-        </Router>
-      </Wrapper>
-    </StateMachineProvider>
+    <Wrapper>
+      <Form>
+        <Stepper alternativeLabel nonLinear activeStep={activeStep}>
+          {steps.map((label, idx) => (
+            <Step key={label}>
+              <StepButton onClick={() => setActiveStep(idx)}>
+                {label}
+              </StepButton>
+            </Step>
+          ))}
+        </Stepper>
+        {getStepContent(activeStep)}
+        <Actions>
+          <Button
+            variant="contained"
+            disabled={activeStep === 0}
+            onClick={() => setActiveStep(activeStep === 0 ? 0 : activeStep - 1)}
+          >
+            Bước trước đó
+          </Button>
+          <Button
+            variant="contained"
+            disabled={activeStep === steps.length - 1}
+            onClick={() =>
+              setActiveStep(
+                activeStep < steps.length - 1 ? activeStep + 1 : activeStep
+              )
+            }
+          >
+            Bước kế tiếp
+          </Button>
+        </Actions>
+      </Form>
+    </Wrapper>
   );
 }
 
@@ -141,6 +190,9 @@ const Wrapper = styled.main`
   align-items: center;
 `;
 
-const Sep = styled.div`
-  height: 50px;
+const Actions = styled.div`
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;

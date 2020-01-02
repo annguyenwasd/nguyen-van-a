@@ -7,7 +7,7 @@ export default class Person {
 
   identifier = '';
 
-  idDate;
+  idDate = new Date();
 
   idLocation = '';
 

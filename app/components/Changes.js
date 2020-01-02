@@ -1,107 +1,65 @@
 import React from 'react';
 import styled from 'styled-components';
 import { InputAdornment, TextField } from '@material-ui/core';
-import useForm from 'react-hook-form';
-import { RHFInput } from 'react-hook-form-input';
 import { isEmpty } from 'ramda';
-import { useStateMachine } from 'little-state-machine';
-import updateAction from '../utils/updateAction';
+import Input from './Input';
+import { useFormContext } from 'react-form';
 
-export default function InputChanges() {
-  const { action, state } = useStateMachine(updateAction);
-  const { register, handleSubmit, setValue, watch } = useForm(state);
-
-  const copy = name => {
-    const values = getValues();
-    const b4Value = values[`changes.before.${name}`];
-    const afterValue = values[`changes.after.${name}`];
-    setValue(`changes.after.${name}`, b4Value);
+export default function Changes() {
+  const { setFieldValue } = useFormContext();
+  const copy = (e, name) => {
+    setFieldValue(`changes.before.${name}`, e.target.value);
+    setFieldValue(`changes.after.${name}`, e.target.value);
   };
-
-  console.log(state);
-
-  const onSubmit = values => action(values);
-
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <>
       <h2>Thông tin đăng kí biến động</h2>
 
       <Land>
         <h4>Trước biến động</h4>
         <h4>Sau biến động</h4>
 
-        <RHFInput
-          register={register}
-          setValue={setValue}
-          defaultValue={state.changes.before.number}
-          as={<TextField />}
+        <Input
           label="Thửa đất số"
           type="number"
-          name="changes.before.number"
-          onChange={() => copy('number')}
+          field="changes.before.number"
+          onChange={e => copy(e, 'number')}
         />
 
-        <RHFInput
-          register={register}
-          setValue={setValue}
-          defaultValue={state.changes.after.number}
-          as={<TextField />}
-          label="Thửa đất số"
-          type="number"
-          name="changes.after.number"
-        />
+        <Input label="Thửa đất số" type="number" field="changes.after.number" />
 
-        <RHFInput
-          register={register}
-          setValue={setValue}
-          defaultValue={state.changes.before.mapNumber}
-          as={<TextField />}
+        <Input
           label="Tờ bản đồ số"
           type="number"
-          name="changes.before.mapNumber"
-          onChange={() => copy('mapNumber')}
+          field="changes.before.mapNumber"
+          onChange={e => copy(e, 'mapNumber')}
         />
 
-        <RHFInput
-          register={register}
-          setValue={setValue}
-          defaultValue={state.changes.after.mapNumber}
-          as={<TextField />}
+        <Input
           label="Tờ bản đồ số"
           type="number"
-          name="changes.after.mapNumber"
+          field="changes.after.mapNumber"
         />
 
-        <RHFInput
-          register={register}
-          setValue={setValue}
-          defaultValue={state.changes.before.purpose}
+        <Input
+          label="Mục đích sử dụng (kí hiệu)"
+          type="text"
+          field="changes.before.purpose"
+          onChange={e => copy(e, 'purpose')}
+        />
+
+        <Input
           as={<TextField />}
           label="Mục đích sử dụng (kí hiệu)"
           type="text"
-          name="changes.before.purpose"
-          onChange={() => copy('purpose')}
+          field="changes.after.purpose"
         />
 
-        <RHFInput
-          register={register}
-          setValue={setValue}
-          defaultValue={state.changes.after.purpose}
-          as={<TextField />}
-          label="Mục đích sử dụng (kí hiệu)"
-          type="text"
-          name="changes.after.purpose"
-        />
-
-        <RHFInput
-          register={register}
-          setValue={setValue}
-          defaultValue={state.changes.before.square}
-          as={<TextField />}
+        <Input
           label="Diện tích"
           type="number"
-          name="changes.before.square"
-          onChange={() => copy('square')}
+          field="changes.before.square"
+          onChange={e => copy(e, 'square')}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -113,14 +71,10 @@ export default function InputChanges() {
           }}
         />
 
-        <RHFInput
-          register={register}
-          setValue={setValue}
-          as={<TextField />}
-          defaultValue={state.changes.after.square}
+        <Input
           label="Diện tích"
           type="number"
-          name="changes.after.square"
+          field="changes.after.square"
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -132,20 +86,16 @@ export default function InputChanges() {
           }}
         />
 
-        <RHFInput
-          register={register}
-          setValue={setValue}
-          defaultValue={state.changes.reason}
-          as={<TextField />}
+        <Input
           label="Lý do biến động"
           type="text"
-          name="changes.reason"
+          field="changes.reason"
           style={{
             gridColumnEnd: 'span 2'
           }}
         />
       </Land>
-    </form>
+    </>
   );
 }
 

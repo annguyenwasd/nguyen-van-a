@@ -1,5 +1,5 @@
 import 'date-fns';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { TextField, Button, MenuItem, IconButton } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -9,151 +9,95 @@ import {
   KeyboardDatePicker
 } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
-import useForm from 'react-hook-form';
-import { RHFInput } from 'react-hook-form-input';
 import { append, remove, pathOr } from 'ramda';
-import { useStateMachine } from 'little-state-machine';
-import updateAction from '../utils/updateAction';
+import Input from './Input';
+import DateInput from './DateInput';
+import { useFormContext } from 'react-form';
 
 const honorifics = ['Ông', 'Bà'];
 
-export default function({ sideName }) {
-  const { register, handleSubmit, setValue } = useForm();
-  const { action, state } = useStateMachine(updateAction);
-
-  const [people, setPeople] = useState(
-    pathOr([], [`side${sideName}`, 'people'], state)
-  );
-
-  const onSubmit = data => {
-    action(data);
-  };
-
+export default function Side({ sideName }) {
+  const { getFieldValue, pushFieldValue, removeFieldValue } = useFormContext();
+  const peopleField = `side${sideName}.people`;
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <People>
-        <h2>
-          Bên {sideName} &nbsp;
-          <Button
-            color="secondary"
-            variant="contained"
-            onClick={() => setPeople(append(new Person(), people))}
-          >
-            Thêm bên {sideName}
-          </Button>
-        </h2>
+    <People>
+      <h2>
+        Bên {sideName} &nbsp;
+        <Button
+          color="secondary"
+          variant="contained"
+          onClick={() => pushFieldValue(peopleField, new Person())}
+        >
+          Thêm bên {sideName}
+        </Button>
+      </h2>
 
-        {people.map((person, idx) => {
-          const nthPerson = `side${sideName}.people.${idx}`;
+      {getFieldValue(peopleField).map((person, idx) => {
+        const nthPerson = `${peopleField}.${idx}`;
 
-          return (
-            <PersonDiv key={`person-${idx}`}>
-              <RHFInput
-                register={register}
-                setValue={setValue}
-                as={<TextField />}
-                name={`${nthPerson}.honorific`}
-                select
-                label="Ông/Bà"
-                id="honorific-selector"
-              >
-                {honorifics.map(h => (
-                  <MenuItem value={h} key={h}>
-                    {h}
-                  </MenuItem>
-                ))}
-              </RHFInput>
-              <RHFInput
-                register={register}
-                setValue={setValue}
-                as={<TextField />}
-                label="Họ và tên"
-                name={`${nthPerson}.fullName`}
-                style={{ gridColumnEnd: 'span 3' }}
-              />
-              <RHFInput
-                register={register}
-                setValue={setValue}
-                as={<TextField />}
-                label="Sinh năm"
-                type="number"
-                name={`${nthPerson}.yearOfBirth`}
-              />
-              <RHFInput
-                register={register}
-                setValue={setValue}
-                as={<TextField />}
-                type="text"
-                label="CMND số"
-                name={`${nthPerson}.identifier`}
-                style={{ gridRow: 2, gridColumn: '1/3' }}
-              />
-              <RHFInput
-                register={register}
-                name={`${nthPerson}.idDate`}
-                as={
-                  <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                    <KeyboardDatePicker
-                      style={{ gridRow: 2, gridColumnEnd: 'span 2' }}
-                      disableToolbar
-                      variant="inline"
-                      format="dd/MM/yyyy"
-                      id="date-picker-inline"
-                      label="Ngày cấp"
-                      KeyboardButtonProps={{
-                        'aria-label': 'change date'
-                      }}
-                      value={people[idx].idDate}
-                      onChange={setValue}
-                    />
-                  </MuiPickersUtilsProvider>
-                }
-              />
-              <RHFInput
-                register={register}
-                setValue={setValue}
-                as={<TextField />}
-                label="Cấp tại"
-                name={`${nthPerson}.idLocation`}
-                style={{ gridRow: 2, gridColumnEnd: 'span 2' }}
-              />
-              <RHFInput
-                register={register}
-                setValue={setValue}
-                as={<TextField />}
-                label="Số nhà"
-                name={`${nthPerson}.houseNumber`}
-                style={{ gridRow: 3, gridColumn: '1/3' }}
-              />
-              <RHFInput
-                register={register}
-                setValue={setValue}
-                as={<TextField />}
-                label="Quận/Huyện"
-                name={`${nthPerson}.district`}
-                style={{ gridRow: 3, gridColumn: '3/5' }}
-              />
-              <RHFInput
-                register={register}
-                setValue={setValue}
-                as={<TextField />}
-                label="Tỉnh/thành phố"
-                name={`${nthPerson}.city`}
-                style={{ gridRow: 3, gridColumn: '5/7' }}
-              />
-              <IconButton
-                aria-label="delete"
-                disabled={people.length < 2}
-                onClick={() => setPeople(remove(idx, 1))}
-                style={{ justifySelf: 'start' }}
-              >
-                <DeleteIcon fontSize="large" />
-              </IconButton>
-            </PersonDiv>
-          );
-        })}
-      </People>
-    </form>
+        return (
+          <PersonDiv key={`person-${idx}`}>
+            <Input
+              field={`${nthPerson}.honorific`}
+              select
+              label="Ông/Bà"
+              id="honorific-selector"
+            >
+              {honorifics.map(h => (
+                <MenuItem value={h} key={h}>
+                  {h}
+                </MenuItem>
+              ))}
+            </Input>
+            <Input
+              label="Họ và tên"
+              field={`${nthPerson}.fullName`}
+              style={{ gridColumnEnd: 'span 3' }}
+            />
+            <Input label="Sinh năm" field={`${nthPerson}.yearOfBirth`} />
+            <Input
+              type="text"
+              label="CMND số"
+              field={`${nthPerson}.identifier`}
+              style={{ gridRow: 2, gridColumn: '1/3' }}
+            />
+            <DateInput
+              style={{ gridRow: 2, gridColumnEnd: 'span 2' }}
+              field={`${nthPerson}.idDate`}
+              label="Ngày cấp GCN"
+            />
+            <Input
+              label="Cấp tại"
+              field={`${nthPerson}.idLocation`}
+              style={{ gridRow: 2, gridColumnEnd: 'span 2' }}
+            />
+            <Input
+              label="Số nhà"
+              field={`${nthPerson}.houseNumber`}
+              style={{ gridRow: 3, gridColumn: '1/3' }}
+            />
+            <Input
+              label="Quận/Huyện"
+              field={`${nthPerson}.district`}
+              style={{ gridRow: 3, gridColumn: '3/5' }}
+            />
+            <Input
+              label="Tỉnh/thành phố"
+              field={`${nthPerson}.city`}
+              style={{ gridRow: 3, gridColumn: '5/7' }}
+            />
+            <IconButton
+              aria-label="delete"
+              disabled={getFieldValue(peopleField).length < 2}
+              onClick={() => removeFieldValue(idx)}
+              style={{ justifySelf: 'start' }}
+            >
+              <DeleteIcon fontSize="large" />
+            </IconButton>
+          </PersonDiv>
+        );
+      })}
+    </People>
   );
 }
 
