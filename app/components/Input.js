@@ -19,4 +19,4 @@ const Input = React.forwardRef((props, ref) => {
   return <TextField {...textFieldProps} />;
 });
 
-export default React.memo(Input);
+export default Input;

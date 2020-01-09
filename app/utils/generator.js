@@ -31,7 +31,7 @@ function angularParser(tag) {
 }
 
 export const generate = data => {
-  fs.readdir(data.input.path, (err, files) => {
+  fs.readdir(data.input, (err, files) => {
     if (err) {
       alert(JSON.stringify(err, null, 2));
       return;
@@ -45,10 +45,10 @@ export const generate = data => {
 };
 
 const generateFile = (file, data) => {
+  console.log(file)
   try {
-    console.log(`${data.input.path}/${file}`);
     const content = fs.readFileSync(
-      path.resolve(`${data.input.path}/${file}`),
+      path.resolve(`${data.input}/${file}`),
       'binary'
     );
 
@@ -64,10 +64,7 @@ const generateFile = (file, data) => {
 
     const buf = doc.getZip().generate({ type: 'nodebuffer' });
     // buf is a nodejs buffer, you can either write it to a file or do anything else with it.
-    fs.writeFileSync(
-      `${(data.output && data.output.path) || desktop}/${file}`,
-      buf
-    );
+    fs.writeFileSync(`${data.output || desktop}/${file}`, buf);
   } catch (error) {
     const e = {
       message: error.message,

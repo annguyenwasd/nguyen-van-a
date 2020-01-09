@@ -16,6 +16,9 @@ import { useFormContext } from 'react-form';
 
 const honorifics = ['Ông', 'Bà'];
 
+const districtTypes = ['quận', 'huyện'];
+const cityTypes = ['tỉnh', 'thành phố'];
+
 export default function Side({ sideName }) {
   const { getFieldValue, pushFieldValue, removeFieldValue } = useFormContext();
   const peopleField = `side${sideName}.people`;
@@ -64,7 +67,7 @@ export default function Side({ sideName }) {
             <DateInput
               style={{ gridRow: 2, gridColumnEnd: 'span 2' }}
               field={`${nthPerson}.idDate`}
-              label="Ngày cấp GCN"
+              label="Ngày cấp"
             />
             <Input
               label="Cấp tại"
@@ -77,14 +80,40 @@ export default function Side({ sideName }) {
               style={{ gridRow: 3, gridColumn: '1/3' }}
             />
             <Input
+              field={`${nthPerson}.districtType`}
+              select
+              label="Đơn vị"
+              id="district-type-selector"
+              style={{ gridRow: 3, gridColumn: '3/4' }}
+            >
+              {districtTypes.map(d => (
+                <MenuItem value={d} key={d}>
+                  {d}
+                </MenuItem>
+              ))}
+            </Input>
+            <Input
               label="Quận/Huyện"
               field={`${nthPerson}.district`}
-              style={{ gridRow: 3, gridColumn: '3/5' }}
+              style={{ gridRow: 3, gridColumn: '4/5' }}
             />
             <Input
-              label="Tỉnh/thành phố"
+              field={`${nthPerson}.cityType`}
+              select
+              label="Đơn vị"
+              id="city-type-selector"
+              style={{ gridRow: 3, gridColumn: '5/6' }}
+            >
+              {cityTypes.map(c => (
+                <MenuItem value={c} key={c}>
+                  {c}
+                </MenuItem>
+              ))}
+            </Input>
+            <Input
+              label="Tỉnh/TP"
               field={`${nthPerson}.city`}
-              style={{ gridRow: 3, gridColumn: '5/7' }}
+              style={{ gridRow: 3, gridColumn: '6/7' }}
             />
             <IconButton
               aria-label="delete"

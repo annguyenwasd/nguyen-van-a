@@ -31,13 +31,13 @@ const initialValues = {
   year: now.getFullYear(),
   changes: {
     gcn: {
-      number: '1234',
+      number: '',
       publish: '',
       approveDate: now,
       location: ''
     },
     before: {
-      square: 2222,
+      square: 0,
       number: '',
       mapNumber: '',
       purpose: ''
@@ -76,7 +76,7 @@ const formatPeople = people =>
   people.map(p => ({
     ...p,
     idDate: toString(p.idDate),
-    address: `${p.houseNumber} ${p.district} ${p.city}`,
+    address: `${p.houseNumber}, ${p.districtType} ${p.district}, ${p.cityType} ${p.city}`,
     fullNameCap: p.fullName.toUpperCase()
   }));
 
@@ -85,20 +85,29 @@ const handleSubmit = values => {
     assocPath(
       ['changes', 'gcn', 'approveDate'],
       toString(values.changes.gcn.approveDate)
-    ),
-    map(assoc('id', prop('identifier')))
+    )
   )(values);
 
   data.sideA.people = formatPeople(values.sideA.people);
 
   data.sideB.people = formatPeople(values.sideB.people);
 
-  data.sideB.names = data.sideB.people
+  data.sideB.peopleInfo = data.sideB.people
     .map(
       p =>
-        `${p.fullName}, sinh năm ${p.yearOfBirth}, CMND số: ${p.identifier} cấp ngày: ${p.idDate} tại ${p.idLocation}`
+        `${p.honorific} ${p.fullNameCap}, sinh năm ${p.yearOfBirth}, CMND số: ${p.identifier} cấp ngày: ${p.idDate} tại ${p.idLocation}`
     )
     .join(' và ');
+
+  data.sideA.names = data.sideA.people
+    .map(p => `${p.honorific} ${p.fullName}`)
+    .join(' và ');
+
+  data.sideB.names = data.sideB.people
+    .map(p => `${p.honorific} ${p.fullName}`)
+    .join(' và ');
+
+  console.log(data);
 
   generate(data);
 };
@@ -119,17 +128,16 @@ export default function Home() {
   const { Form } = useForm({
     defaultValues: data,
     onSubmit: values => {
-      console.log(values);
-    },
-    debugForm: true
+      handleSubmit(values);
+    }
   });
 
   const getStepContent = step => {
     switch (step) {
       case 0:
-        return <Side sideName="A" initialValues={data} />;
+        return <Side sideName="A" />;
       case 1:
-        return <Side sideName="B" initialValues={data} />;
+        return <Side sideName="B" />;
       case 2:
         return <GCN />;
       case 3:

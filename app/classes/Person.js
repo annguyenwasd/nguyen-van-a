@@ -1,8 +1,6 @@
 export default class Person {
   fullName = '';
 
-  fullNameCap = '';
-
   yearOfBirth = '';
 
   identifier = '';
@@ -17,11 +15,11 @@ export default class Person {
 
   houseNumber = '';
 
+  districtType = 'huyện';
+
   district = '';
 
   city = '';
 
-  constructor() {
-    this.idDate = new Date();
-  }
+  cityType = 'tỉnh';
 }

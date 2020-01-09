@@ -6,44 +6,47 @@ import Input from './Input';
 import { useFormContext } from 'react-form';
 
 export default function() {
-  const { values } = useFormContext();
+  const { values, setValues } = useFormContext();
   return (
     <>
       <Input label="Năm làm hồ sơ" type="number" field="year" />
 
-      <Output>
-        <label htmlFor="input">Thư mục chứa file word</label>
+      <Folder>
+        <label htmlFor="input">Thư mục chứa file word: {values.input}</label>
         <input
-          field="input"
+          onChange={e =>
+            setValues({ ...values, input: e.target.files[0].path })
+          }
           id="input"
           type="file"
           webkitdirectory="true"
           directory="true"
         />
-      </Output>
-      <Output>
-        <label htmlFor="output">Thư mục xuất</label>
+      </Folder>
+      <Folder>
+        <label htmlFor="output">Thư mục xuất: {values.output}</label>
         <input
-          field="output"
+          onChange={e =>
+            setValues({ ...values, output: e.target.files[0].path })
+          }
           id="output"
           type="file"
           webkitdirectory="true"
           directory="true"
         />
-      </Output>
-      <Button
-        variant="contained"
-        color="primary"
-        type="submit"
-      >
+      </Folder>
+      <Button variant="contained" color="primary" type="submit">
         Xuất
       </Button>
     </>
   );
 }
 
-const Output = styled.div`
-  grid-column-end: 2;
+const Folder = styled.div`
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  grid-column-gap: 30px;
+  margin: 30px 0;
 
   label {
     margin-right: 20px;
