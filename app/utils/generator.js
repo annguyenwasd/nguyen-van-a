@@ -5,6 +5,7 @@ import path from 'path';
 import Docxtemplater from 'docxtemplater';
 import * as expressions from 'angular-expressions';
 import { merge } from 'lodash';
+import { getFileName } from './file';
 
 const desktop = path.resolve(homedir(), `Desktop`);
 
@@ -45,7 +46,7 @@ export const generate = data => {
 };
 
 const generateFile = (file, data) => {
-  console.log(file)
+  console.log(file);
   try {
     const content = fs.readFileSync(
       path.resolve(`${data.input}/${file}`),
@@ -75,4 +76,19 @@ const generateFile = (file, data) => {
     alert(JSON.stringify(e, null, 2));
     throw error;
   }
+};
+
+export const writeJson = data => {
+  const fileName = getFileName(
+    `${data.sideA.people[0].fullName} ${data.sideB.people[0].fullName}`
+  );
+  fs.writeFile(
+    `${data.output}/${fileName}.json`,
+    JSON.stringify(data, null, 2),
+    function(err) {
+      if (err) {
+        alert(JSON.stringify(err, null, 2));
+      }
+    }
+  );
 };
